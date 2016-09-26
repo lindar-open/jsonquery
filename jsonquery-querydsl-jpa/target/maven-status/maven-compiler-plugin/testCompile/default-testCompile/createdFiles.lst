@@ -1,0 +1,4 @@
+com/lindar/jsonquery/querydsl/jpa/TestQuerydslJpaJsonQueryVisitor.class
+com/lindar/jsonquery/querydsl/jpa/domain/Player.class
+com/lindar/jsonquery/querydsl/jpa/domain/PlayerAttrition.class
+com/lindar/jsonquery/querydsl/jpa/TestQuerydslJpaJsonQueryVisitor$Holder.class

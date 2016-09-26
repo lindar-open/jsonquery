@@ -1,0 +1,16 @@
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/BasicComparisonAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/JsonQueryRelationshipVisitor.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/ComparisonAggregateOperation.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/LogicalRelationshipNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/StringComparisonAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/JsonQueryRelationships.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/RelationshipNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/AggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/NumberComparisonAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/ComparisonAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/RelatedRelationshipNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/BigDecimalComparisonAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/BaseAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/JsonQueryAggregateVisitor.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/LogicalAggregateNode.java
+/Users/stevenhills/dev/personal/jsonquery/jsonquery-relationships/src/main/java/com/lindar/jsonquery/relationships/ast/BaseRelationshipNode.java
