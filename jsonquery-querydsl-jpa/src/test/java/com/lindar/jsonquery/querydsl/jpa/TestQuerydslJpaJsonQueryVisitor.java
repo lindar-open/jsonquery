@@ -1,13 +1,15 @@
 package com.lindar.jsonquery.querydsl.jpa;
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
+import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.google.common.collect.Lists;
 import com.lindar.jsonquery.ast.*;
 import com.lindar.jsonquery.querydsl.jpa.domain.Player;
 import com.lindar.jsonquery.querydsl.jpa.domain.PlayerAttrition;
+import com.lindar.jsonquery.relationships.JsonQueryWithRelationships;
 import com.lindar.jsonquery.relationships.ast.*;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.HQLTemplates;
@@ -67,22 +69,16 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    //@DatabaseSetup("/sampleData.xml")
+    @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithJoin() throws Exception {
 
         StringComparisonNode stringNode = new StringComparisonNode();
         stringNode.setField("brand.type");
         stringNode.setOperation(StringComparisonOperation.BEGINS_WITH);
         ArrayList<String> values = new ArrayList<String>();
-        values.add("random");
+        values.add("dragonfish");
         stringNode.setValue(values);
 
-        StringComparisonNode stringNode2 = new StringComparisonNode();
-        stringNode2.setField("brand.type");
-        stringNode2.setOperation(StringComparisonOperation.ENDS_WITH);
-        ArrayList<String> values2 = new ArrayList<String>();
-        values2.add("something");
-        stringNode2.setValue(values);
 
         BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
         decimalNode.setField("deposits");
@@ -95,23 +91,26 @@ public class TestQuerydslJpaJsonQueryVisitor {
         relatedRelationshipNode.setField("attritions");
         relatedRelationshipNode.getConditions().getItems().add(decimalNode);
 
-        Holder holder = new Holder();
-        holder.conditions.getItems().add(stringNode);
-        holder.conditions.getItems().add(stringNode2);
-        holder.relationships.getItems().add(relatedRelationshipNode);
+        JsonQueryWithRelationships holder = new JsonQueryWithRelationships();
+        holder.getConditions().getItems().add(stringNode);
+        holder.getRelationships().getItems().add(relatedRelationshipNode);
 
-        JPAQuery query = new JPAQuery(entityManager);
-        PathBuilder entity = new PathBuilder(Player.class, "player");
-        Predicate conditions = holder.conditions.accept(visitor, entity);
-        Predicate relationships = holder.relationships.accept(visitor, entity);
-        Predicate predicate = ExpressionUtils.allOf(conditions, relationships);
+        //query.fetch();
 
-        query.select(entity).from(entity);
+        JPAQuery query2 = new JPAQuery(entityManager);
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QuerydslJpaJsonQuery.applyPredicate(booleanBuilder, entity2, holder);
 
-        query.where(predicate);
+        query2.select(entity2).from(entity2).where(booleanBuilder);
+        List fetch = query2.fetch();
+        System.out.println(fetch.size());
 
-        query.fetch();
-        assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
+        /*JPAQuery query2 = new JPAQuery(entityManager);
+        query2.select(entity).from(entity).where(entity.in(query));
+        query2.fetch();*/
+
+        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
 
     }
 

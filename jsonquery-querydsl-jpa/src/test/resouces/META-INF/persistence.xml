@@ -8,7 +8,6 @@
         <class>com.lindar.jsonquery.querydsl.jpa.domain.Player</class>
         <class>com.lindar.jsonquery.querydsl.jpa.domain.PlayerAttrition</class>
         <class>com.lindar.jsonquery.querydsl.jpa.domain.Brand</class>
-        <class>com.lindar.jsonquery.querydsl.jpa.domain.BrandNote</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
             <property name="hibernate.hbm2ddl.auto" value="create-drop" />
