@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataset>
-    <Player id="1" username="user1" deposits="100"/>
-    <Player id="2" username="user2" deposits="500"/>
-    <Player id="3" username="user3" deposits="0"/>
+    <BrandNote id="1" note="something"/>
+    <BrandNote id="2" note="something else"/>
+
+    <Brand id="1" type="dragonfish" brand_note_id="1"/>
+    <Brand id="2" type="mamba" brand_note_id="2"/>
+
+    <Player id="1" username="user1" deposits="100" brand_id="1"/>
+    <Player id="2" username="user2" deposits="500" brand_id="1"/>
+    <Player id="3" username="user3" deposits="0" brand_id="2"/>
+
 </dataset>

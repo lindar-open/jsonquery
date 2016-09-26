@@ -7,10 +7,12 @@ import com.lindar.jsonquery.querydsl.jpa.domain.Player;
 import com.lindar.jsonquery.querydsl.jpa.domain.PlayerAttrition;
 import com.lindar.jsonquery.relationships.ast.*;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.HQLTemplates;
 import com.querydsl.jpa.JPQLSerializer;
+import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -46,7 +49,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
     @Before
     public void setUp() {
-        visitor = new QuerydslJpaJsonQueryVisitor();
+        visitor = new QuerydslJpaJsonQueryVisitor(new JPAQuery());
         playerEntity = new PathBuilder(Player.class, "player");
         playerAttritionEntity = new PathBuilder(PlayerAttrition.class, "player_attrition");
 
@@ -63,16 +66,23 @@ public class TestQuerydslJpaJsonQueryVisitor {
         playerAttritionEntity = null;
     }
 
-    /*@Test
-    @DatabaseSetup("/sampleData.xml")
-    public void testFind() throws Exception {
+    @Test
+    //@DatabaseSetup("/sampleData.xml")
+    public void testGeneratedQueryWithJoin() throws Exception {
 
         StringComparisonNode stringNode = new StringComparisonNode();
-        stringNode.setField("username");
+        stringNode.setField("brand.type");
         stringNode.setOperation(StringComparisonOperation.BEGINS_WITH);
         ArrayList<String> values = new ArrayList<String>();
         values.add("random");
         stringNode.setValue(values);
+
+        StringComparisonNode stringNode2 = new StringComparisonNode();
+        stringNode2.setField("brand.type");
+        stringNode2.setOperation(StringComparisonOperation.ENDS_WITH);
+        ArrayList<String> values2 = new ArrayList<String>();
+        values2.add("something");
+        stringNode2.setValue(values);
 
         BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
         decimalNode.setField("deposits");
@@ -87,6 +97,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         Holder holder = new Holder();
         holder.conditions.getItems().add(stringNode);
+        holder.conditions.getItems().add(stringNode2);
         holder.relationships.getItems().add(relatedRelationshipNode);
 
         JPAQuery query = new JPAQuery(entityManager);
@@ -94,12 +105,15 @@ public class TestQuerydslJpaJsonQueryVisitor {
         Predicate conditions = holder.conditions.accept(visitor, entity);
         Predicate relationships = holder.relationships.accept(visitor, entity);
         Predicate predicate = ExpressionUtils.allOf(conditions, relationships);
-        query.select(entity).from(entity).where(predicate);
-        List<Player> fetch = query.fetch();
 
-        //assertToString("", conditions);
+        query.select(entity).from(entity);
 
-    }*/
+        query.where(predicate);
+
+        query.fetch();
+        assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
+
+    }
 
     @Test
     public void testVisitBigDecimalComparisonAggregateNode(){
@@ -174,6 +188,13 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         AggregateComparisonOperation.BETWEEN,
                         values));
 
+
+        assertToString("not sum(player.deposits) = ?1",
+                createBigDecimalComparisonAggregateNodePredicate("deposits",
+                        NumberComparisonAggregateNode.NumberAggregateOperation.SUM,
+                        AggregateComparisonOperation.EQUALS,
+                        value, true));
+
     }
 
     @Test
@@ -184,45 +205,51 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         assertToString("count(player.promocode) > ?1",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT,
+                        StringAggregateOperation.COUNT,
                         AggregateComparisonOperation.GREATER_THAN,
                         value));
 
         assertToString("count(distinct player.promocode) > ?1",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT_DISTINCT,
+                        StringAggregateOperation.COUNT_DISTINCT,
                         AggregateComparisonOperation.GREATER_THAN,
                         value));
 
         assertToString("count(player.promocode) = ?1",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT,
+                        StringAggregateOperation.COUNT,
                         AggregateComparisonOperation.EQUALS,
                         value));
 
         assertToString("count(player.promocode) >= ?1",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT,
+                        StringAggregateOperation.COUNT,
                         AggregateComparisonOperation.GREATER_THAN_OR_EQUAL,
                         value));
 
         assertToString("count(player.promocode) < ?1",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT,
+                        StringAggregateOperation.COUNT,
                         AggregateComparisonOperation.LESS_THAN,
                         value));
 
         assertToString("count(player.promocode) <= ?1",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT,
+                        StringAggregateOperation.COUNT,
                         AggregateComparisonOperation.LESS_THAN_OR_EQUAL,
                         value));
 
         assertToString("count(player.promocode) between ?1 and ?2",
                 createStringComparisonAggregateNodePredicate("promocode",
-                        StringComparisonAggregateNode.StringAggregateOperation.COUNT,
+                        StringAggregateOperation.COUNT,
                         AggregateComparisonOperation.BETWEEN,
                         values));
+
+        assertToString("not count(player.promocode) > ?1",
+                createStringComparisonAggregateNodePredicate("promocode",
+                        StringAggregateOperation.COUNT,
+                        AggregateComparisonOperation.GREATER_THAN,
+                        value, true));
 
     }
 
@@ -272,6 +299,11 @@ public class TestQuerydslJpaJsonQueryVisitor {
                 createStringComparisonNodePredicate("promocode",
                         StringComparisonOperation.EQUALS,
                         values, true));
+
+        assertToString("brand.type = ?1",
+                createStringComparisonNodePredicate("brand.type",
+                        StringComparisonOperation.EQUALS,
+                        value));
     }
 
     @Test
@@ -321,6 +353,12 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
+    public void testVisitDateComparisonNode() {
+
+
+    }
+
+    @Test
     public void testVisitLogicalNode(){
         List<BigDecimal> value = Lists.newArrayList(BigDecimal.ZERO);
 
@@ -347,6 +385,12 @@ public class TestQuerydslJpaJsonQueryVisitor {
         node4.setNegate(false);
         node4.setOperation(NumberComparisonOperation.GREATER_THAN_OR_EQUAL);
         node4.setValue(value);
+
+        StringComparisonNode nodeRelated = new StringComparisonNode();
+        nodeRelated.setField("brand.type");
+        nodeRelated.setNegate(false);
+        nodeRelated.setOperation(StringComparisonOperation.CONTAINS);
+        nodeRelated.setValue(Lists.newArrayList("something"));
 
 
         LogicalNode logicalNodeAnd = new LogicalNode(LogicalNode.LogicalOperation.AND);
@@ -378,6 +422,76 @@ public class TestQuerydslJpaJsonQueryVisitor {
         assertToString("player.deposits < ?1 or (player.deposits <= ?1 or player.deposits >= ?1)",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.OR, Lists.newArrayList(node1, logicalNodeOr))
         );
+
+
+        assertToString("brand.type like ?1 escape '!'",
+                createLogicalNodePredicate(LogicalNode.LogicalOperation.AND, Lists.newArrayList(nodeRelated))
+        );
+
+    }
+
+    @Test
+    public void testVisitLogicalAggregateNode(){
+        List<BigDecimal> value = Lists.newArrayList(BigDecimal.ZERO);
+
+        BigDecimalComparisonAggregateNode node1 = new BigDecimalComparisonAggregateNode();
+        node1.setField("deposits");
+        node1.setNegate(false);
+        node1.setAggregateOperation(NumberComparisonAggregateNode.NumberAggregateOperation.SUM);
+        node1.setOperation(AggregateComparisonOperation.LESS_THAN);
+        node1.setValue(value);
+
+        BigDecimalComparisonAggregateNode node2 = new BigDecimalComparisonAggregateNode();
+        node2.setField("deposits");
+        node2.setNegate(false);
+        node2.setAggregateOperation(NumberComparisonAggregateNode.NumberAggregateOperation.SUM);
+        node2.setOperation(AggregateComparisonOperation.GREATER_THAN);
+        node2.setValue(value);
+
+        BigDecimalComparisonAggregateNode node3 = new BigDecimalComparisonAggregateNode();
+        node3.setField("deposits");
+        node3.setNegate(false);
+        node3.setAggregateOperation(NumberComparisonAggregateNode.NumberAggregateOperation.SUM);
+        node3.setOperation(AggregateComparisonOperation.LESS_THAN_OR_EQUAL);
+        node3.setValue(value);
+
+        BigDecimalComparisonAggregateNode node4 = new BigDecimalComparisonAggregateNode();
+        node4.setField("deposits");
+        node4.setNegate(false);
+        node4.setAggregateOperation(NumberComparisonAggregateNode.NumberAggregateOperation.SUM);
+        node4.setOperation(AggregateComparisonOperation.GREATER_THAN_OR_EQUAL);
+        node4.setValue(value);
+
+
+        LogicalAggregateNode logicalNodeAnd = new LogicalAggregateNode(LogicalAggregateNode.LogicalAggregateOperation.AND);
+        logicalNodeAnd.setItems(Lists.newArrayList(node3, node4));
+
+        LogicalAggregateNode logicalNodeOr = new LogicalAggregateNode(LogicalAggregateNode.LogicalAggregateOperation.OR);
+        logicalNodeOr.setItems(Lists.newArrayList(node3, node4));
+
+        assertToString("sum(player.deposits) < ?1 and sum(player.deposits) > ?1",
+                createLogicalAggregateNodePredicate(LogicalAggregateNode.LogicalAggregateOperation.AND, Lists.newArrayList(node1, node2))
+        );
+
+        assertToString("sum(player.deposits) < ?1 or sum(player.deposits) > ?1",
+                createLogicalAggregateNodePredicate(LogicalAggregateNode.LogicalAggregateOperation.OR, Lists.newArrayList(node1, node2))
+        );
+
+        assertToString("sum(player.deposits) < ?1 and (sum(player.deposits) <= ?1 and sum(player.deposits) >= ?1)",
+                createLogicalAggregateNodePredicate(LogicalAggregateNode.LogicalAggregateOperation.AND, Lists.newArrayList(node1, logicalNodeAnd))
+        );
+
+        assertToString("sum(player.deposits) < ?1 and (sum(player.deposits) <= ?1 or sum(player.deposits) >= ?1)",
+                createLogicalAggregateNodePredicate(LogicalAggregateNode.LogicalAggregateOperation.AND, Lists.newArrayList(node1, logicalNodeOr))
+        );
+
+        assertToString("sum(player.deposits) < ?1 or sum(player.deposits) <= ?1 and sum(player.deposits) >= ?1",
+                createLogicalAggregateNodePredicate(LogicalAggregateNode.LogicalAggregateOperation.OR, Lists.newArrayList(node1, logicalNodeAnd))
+        );
+
+        assertToString("sum(player.deposits) < ?1 or (sum(player.deposits) <= ?1 or sum(player.deposits) >= ?1)",
+                createLogicalAggregateNodePredicate(LogicalAggregateNode.LogicalAggregateOperation.OR, Lists.newArrayList(node1, logicalNodeOr))
+        );
     }
 
 
@@ -392,31 +506,49 @@ public class TestQuerydslJpaJsonQueryVisitor {
                                                     AggregateComparisonOperation comparisonOperation,
                                                     List<BigDecimal> value
                                                     ){
-            BigDecimalComparisonAggregateNode node = new BigDecimalComparisonAggregateNode();
-            node.setField(field);
-            node.setAggregateOperation(aggregateOperation);
-            node.setNegate(false);
-            node.setOperation(comparisonOperation);
-            node.setValue(value);
-
-            return node.accept(visitor, playerEntity);
+            return createBigDecimalComparisonAggregateNodePredicate(field, aggregateOperation, comparisonOperation, value, false);
 
     }
 
-    private Predicate createStringComparisonAggregateNodePredicate(String field,
-                                                                       StringComparisonAggregateNode.StringAggregateOperation aggregateOperation,
+    private Predicate createBigDecimalComparisonAggregateNodePredicate(String field,
+                                                                       NumberComparisonAggregateNode.NumberAggregateOperation aggregateOperation,
                                                                        AggregateComparisonOperation comparisonOperation,
-                                                                       List<Integer> value
+                                                                       List<BigDecimal> value,
+                                                                       boolean negate
     ){
-        StringComparisonAggregateNode node = new StringComparisonAggregateNode();
+        BigDecimalComparisonAggregateNode node = new BigDecimalComparisonAggregateNode();
         node.setField(field);
         node.setAggregateOperation(aggregateOperation);
-        node.setNegate(false);
+        node.setNegate(negate);
         node.setOperation(comparisonOperation);
         node.setValue(value);
 
         return node.accept(visitor, playerEntity);
 
+    }
+
+    private Predicate createStringComparisonAggregateNodePredicate(String field,
+                                                                       StringAggregateOperation aggregateOperation,
+                                                                       AggregateComparisonOperation comparisonOperation,
+                                                                       List<Integer> value
+    ){
+        return createStringComparisonAggregateNodePredicate(field, aggregateOperation, comparisonOperation, value, false);
+    }
+
+    private Predicate createStringComparisonAggregateNodePredicate(String field,
+                                                                   StringAggregateOperation aggregateOperation,
+                                                                   AggregateComparisonOperation comparisonOperation,
+                                                                   List<Integer> value,
+                                                                   boolean negate
+    ){
+        StringComparisonAggregateNode node = new StringComparisonAggregateNode();
+        node.setField(field);
+        node.setAggregateOperation(aggregateOperation);
+        node.setNegate(negate);
+        node.setOperation(comparisonOperation);
+        node.setValue(value);
+
+        return node.accept(visitor, playerEntity);
     }
 
 

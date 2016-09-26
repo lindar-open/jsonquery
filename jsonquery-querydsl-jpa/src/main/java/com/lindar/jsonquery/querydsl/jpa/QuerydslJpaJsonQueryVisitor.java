@@ -12,6 +12,7 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,9 +41,19 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     protected HashBasedTable<PathBuilder, String, PathBuilder> joins = HashBasedTable.create();
     protected JPAQuery query;
 
+    public QuerydslJpaJsonQueryVisitor(JPAQuery query){
+        this.query = query;
+    }
+
+    public Collection<PathBuilder> getJoins(){
+        return joins.values();
+    }
+
     public Predicate visit(StringComparisonNode node, PathBuilder entity) {
 
-        StringPath stringPath = entity.getString(node.getField());
+        ImmutablePair<String, PathBuilder> stringPathJoin = doJoinIfNeeded(node.getField(), entity);
+
+        StringPath stringPath = stringPathJoin.getValue().getString(stringPathJoin.getKey());
 
         String singleValue = "";
         if(node.getValue() != null && !node.getValue().isEmpty()){
@@ -85,7 +97,9 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     @Override
     public Predicate visit(BigDecimalComparisonNode node, PathBuilder context) {
 
-        NumberPath<BigDecimal> numberPath = context.getNumber(node.getField(), BigDecimal.class);
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), context);
+
+        NumberPath<BigDecimal> numberPath = pathJoin.getValue().getNumber(pathJoin.getKey(), BigDecimal.class);
 
         Predicate predicate = null;
 
@@ -143,14 +157,74 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
         throw new IllegalArgumentException("Unsupported Date operator " + dateComparisonNode.getOperation());
     }
 
+    @Override
+    public Predicate visit(BooleanComparisonNode booleanComparisonNode, PathBuilder context) {
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(booleanComparisonNode.getField(), context);
+        return pathJoin.getValue().getBoolean(pathJoin.getKey()).eq(booleanComparisonNode.getValue());
+    }
+
+    @Override
+    public Predicate visit(EnumComparisonNode enumComparisonNode, PathBuilder context) {
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(enumComparisonNode.getField(), context);
+
+        StringExpression stringPath = pathJoin.getValue().getEnum(pathJoin.getKey(), Enum.class).stringValue();
+
+        String singleValue = "";
+        if(enumComparisonNode.getValue() != null && !enumComparisonNode.getValue().isEmpty()){
+            singleValue = enumComparisonNode.getValue().get(0);
+        }
+
+        Predicate predicate = null;
+        switch(enumComparisonNode.getOperation()){
+
+            case EQUALS:
+                predicate = stringPath.eq(singleValue);
+                break;
+            case EMPTY:
+                predicate = stringPath.isEmpty();
+                break;
+            case IN:
+                predicate = stringPath.in(enumComparisonNode.getValue());
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported Enum operator " + enumComparisonNode.getOperation());
+        }
+
+        return predicate;
+    }
+
+    @Override
+    public Predicate visit(LookupComparisonNode lookupComparisonNode, PathBuilder context) {
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(lookupComparisonNode.getField(), context);
+
+        NumberExpression longPath = pathJoin.getValue().getNumber(pathJoin.getKey(), Long.class);
+
+        Long singleValue = 0L;
+        if(lookupComparisonNode.getValue() != null && !lookupComparisonNode.getValue().isEmpty()){
+            singleValue = lookupComparisonNode.getValue().get(0);
+        }
+
+        Predicate predicate = null;
+        switch(lookupComparisonNode.getOperation()){
+
+            case EQUALS:
+                predicate = longPath.eq(singleValue);
+                break;
+            case EMPTY:
+                predicate = longPath.isNull();
+                break;
+            case IN:
+                predicate = longPath.in(lookupComparisonNode.getValue());
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported Enum operator " + lookupComparisonNode.getOperation());
+        }
+
+        return predicate;
+    }
+
     public Predicate visit(LogicalNode logicalNode, PathBuilder entity) {
         List<Predicate> predicates = logicalNode.getItems().stream().map(node -> {
-
-            if(node instanceof ComparisonNode){
-                ComparisonNode comparisonNode = (ComparisonNode) node;
-                return node.accept(this, doJoinIfNeeded(comparisonNode.getField(), entity));
-            }
-
             return node.accept(this, entity);
         }).collect(Collectors.toList());
 
@@ -234,7 +308,10 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
     @Override
     public Predicate visit(StringComparisonAggregateNode stringComparisonAggregateNode, PathBuilder entity) {
-        StringExpression stringPath = entity.getString(stringComparisonAggregateNode.getField());
+
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(stringComparisonAggregateNode.getField(), entity);
+
+        StringExpression stringPath = pathJoin.getValue().getString(pathJoin.getKey());
 
         NumberExpression numberPath = null;
 
@@ -284,16 +361,6 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     @Override
     public Predicate visit(LogicalAggregateNode logicalAggregateNode, PathBuilder entity) {
         List<Predicate> predicates = logicalAggregateNode.getItems().stream().map(node -> {
-
-            if(node instanceof ComparisonAggregateNode){
-                ComparisonAggregateNode comparisonNode = (ComparisonAggregateNode) node;
-                Predicate predicate = node.accept(this, doJoinIfNeeded(comparisonNode.getField(), entity));
-                if(comparisonNode.isNegate()){
-                    return predicate.not();
-                }
-                return predicate;
-            }
-
             return node.accept(this, entity);
         }).collect(Collectors.toList());
 
@@ -309,7 +376,10 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
     @Override
     public Predicate visit(BigDecimalComparisonAggregateNode bigDecimalComparisonAggregateNode, PathBuilder entity) {
-        NumberExpression numberPath = entity.getNumber(bigDecimalComparisonAggregateNode.getField(), BigDecimal.class);
+
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(bigDecimalComparisonAggregateNode.getField(), entity);
+
+        NumberExpression numberPath = pathJoin.getValue().getNumber(pathJoin.getKey(), BigDecimal.class);
 
         switch (bigDecimalComparisonAggregateNode.getAggregateOperation()){
 
@@ -366,52 +436,61 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
         return predicate;
     }
 
+    @Override
+    public Predicate visit(EnumComparisonAggregateNode enumComparisonAggregateNode, PathBuilder entity) {
 
-    private PathBuilder doJoinIfNeeded(String field, PathBuilder entity){
-        String[] fieldParts = DOT.split(field);
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(enumComparisonAggregateNode.getField(), entity);
 
-        // join needed
-        if(fieldParts.length > 1){
-            String[] parent = new String[fieldParts.length - 1];
-            System.arraycopy(fieldParts, 0, parent, 0, fieldParts.length - 1);
-            return doJoin(entity, StringUtils.join(parent, "."), "");
+        StringExpression stringPath = pathJoin.getValue().getEnum(pathJoin.getKey(), Enum.class).stringValue();
+
+        NumberExpression numberPath = null;
+
+        switch (enumComparisonAggregateNode.getAggregateOperation()){
+
+            case COUNT:
+                numberPath = stringPath.count();
+                break;
+            case COUNT_DISTINCT:
+                numberPath = stringPath.countDistinct();
+                break;
         }
 
-        // not needed
-        return entity;
-    }
+        Predicate predicate = null;
 
-    private PathBuilder<?> doJoin (
-            PathBuilder<?> entity,
-            String path,
-            String reference) {
+        Integer singleValue = enumComparisonAggregateNode.getValue().get(0);
 
-        String safeReference = toSafeReference(reference);
-        String mapReference = safeReference;
-        PathBuilder<?> rv = joins.get(entity, mapReference);
-        if (rv == null) {
-            if (path.contains(".")) {
-                String[] tokens = DOT.split(path);
-                String[] parent = new String[tokens.length - 1];
-                System.arraycopy(tokens, 0, parent, 0, tokens.length - 1);
-                String parentKey = StringUtils.join(parent, ".");
-                entity = doJoin(entity, parentKey, safeReference);
-                rv = new PathBuilder(Object.class, StringUtils.join(tokens, "_") + safeReference);
-                query.leftJoin((EntityPath)entity.get(tokens[tokens.length - 1]), rv);
-            } else {
-                rv = new PathBuilder(Object.class, path + safeReference);
-                query.leftJoin((EntityPath)entity.get(path), rv);
-            }
-            joins.put(entity, mapReference, rv);
+        switch (enumComparisonAggregateNode.getOperation()){
+
+            case EQUALS:
+                predicate = numberPath.eq(singleValue);
+                break;
+            case GREATER_THAN:
+                predicate = numberPath.gt(singleValue);
+                break;
+            case LESS_THAN:
+                predicate = numberPath.lt(singleValue);
+                break;
+            case GREATER_THAN_OR_EQUAL:
+                predicate = numberPath.goe(singleValue);
+                break;
+            case LESS_THAN_OR_EQUAL:
+                predicate = numberPath.loe(singleValue);
+                break;
+            case BETWEEN:
+                predicate = numberPath.between(singleValue, enumComparisonAggregateNode.getValue().get(1));
+                break;
         }
-        return rv;
+
+        if(enumComparisonAggregateNode.isNegate()){
+            return predicate.not();
+        }
+
+        return predicate;
     }
 
     private String toSafeReference(String reference){
         return reference.replace("-", "_");
     }
-
-
 
     private Predicate fromPreset(DateComparisonNode dateComparisonNode, DateTemplate<Date> dateExpression){
 
@@ -497,6 +576,48 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
     private Date fromLocalDate(LocalDate date){
         return Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private ImmutablePair<String, PathBuilder> doJoinIfNeeded(String field, PathBuilder entity){
+        String[] fieldParts = DOT.split(field);
+
+        // join needed
+        if(fieldParts.length > 1){
+            String[] parent = new String[fieldParts.length - 1];
+            System.arraycopy(fieldParts, 0, parent, 0, fieldParts.length - 1);
+
+            PathBuilder<?> parentAlias = doJoin(entity, StringUtils.join(parent, "."), "");
+            return ImmutablePair.of(fieldParts[fieldParts.length - 1], parentAlias);
+        }
+
+        // not needed
+        return ImmutablePair.of(field, entity);
+    }
+
+    private PathBuilder<?> doJoin (
+            PathBuilder<?> entity,
+            String path,
+            String reference) {
+
+        String safeReference = toSafeReference(reference);
+        String mapReference = safeReference;
+        PathBuilder<?> rv = joins.get(entity, mapReference);
+        if (rv == null) {
+            if (path.contains(".")) {
+                String[] tokens = DOT.split(path);
+                String[] parent = new String[tokens.length - 1];
+                System.arraycopy(tokens, 0, parent, 0, tokens.length - 1);
+                String parentKey = StringUtils.join(parent, ".");
+                entity = doJoin(entity, parentKey, safeReference);
+                rv = new PathBuilder(Object.class, StringUtils.join(tokens, "_") + safeReference);
+                query.leftJoin((EntityPath)entity.get(tokens[tokens.length - 1]), rv);
+            } else {
+                rv = new PathBuilder(Object.class, path + safeReference);
+                query.leftJoin((EntityPath)entity.get(path), rv);
+            }
+            joins.put(entity, mapReference, rv);
+        }
+        return rv;
     }
 
 }

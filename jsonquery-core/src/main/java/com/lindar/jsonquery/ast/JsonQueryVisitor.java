@@ -8,4 +8,10 @@ public interface JsonQueryVisitor<R, C>  {
     R visit(LogicalNode logicalNode, C context);
     R visit(BigDecimalComparisonNode bigDecimalComparisonNode, C context);
     R visit(DateComparisonNode dateComparisonNode, C context);
+
+    R visit(BooleanComparisonNode booleanComparisonNode, C context);
+
+    R visit(EnumComparisonNode enumComparisonNode, C context);
+
+    R visit(LookupComparisonNode lookupComparisonNode, C context);
 }

@@ -19,4 +19,7 @@ public class Player {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "player", fetch = FetchType.LAZY)
     private List<PlayerAttrition> attritions;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private Brand brand;
 }
