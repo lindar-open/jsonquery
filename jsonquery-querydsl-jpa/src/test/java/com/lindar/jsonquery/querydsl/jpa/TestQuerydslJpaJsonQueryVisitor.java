@@ -100,7 +100,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         JPAQuery query2 = new JPAQuery(entityManager);
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
-        QuerydslJpaJsonQuery.applyPredicate(booleanBuilder, entity2, holder);
+        QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
         List fetch = query2.fetch();
