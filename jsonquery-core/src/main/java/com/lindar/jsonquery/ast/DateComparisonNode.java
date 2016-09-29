@@ -2,6 +2,7 @@ package com.lindar.jsonquery.ast;
 
 import com.google.common.collect.Lists;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
  * Created by stevenhills on 26/09/2016.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class DateComparisonNode extends ComparisonNode {
 
     private Operation operation;

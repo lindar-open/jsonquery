@@ -6,6 +6,7 @@
                       transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <class>com.lindar.jsonquery.querydsl.jpa.domain.Player</class>
+        <class>com.lindar.jsonquery.querydsl.jpa.domain.PlayerList</class>
         <class>com.lindar.jsonquery.querydsl.jpa.domain.PlayerAttrition</class>
         <class>com.lindar.jsonquery.querydsl.jpa.domain.Brand</class>
         <properties>

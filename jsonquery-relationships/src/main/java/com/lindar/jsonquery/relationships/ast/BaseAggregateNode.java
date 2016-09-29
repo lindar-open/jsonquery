@@ -13,4 +13,5 @@ import java.util.UUID;
 @EqualsAndHashCode(of="reference")
 public abstract class BaseAggregateNode implements AggregateNode, Serializable {
     private String reference = UUID.randomUUID().toString();
+    private boolean enabled = true;
 }

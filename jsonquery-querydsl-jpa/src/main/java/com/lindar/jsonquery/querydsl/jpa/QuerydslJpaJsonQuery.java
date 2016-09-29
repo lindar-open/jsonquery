@@ -5,6 +5,7 @@ import com.lindar.jsonquery.ast.Node;
 import com.lindar.jsonquery.relationships.JsonQueryWithRelationships;
 import com.lindar.jsonquery.relationships.ast.RelationshipNode;
 import com.mysema.commons.lang.Assert;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -17,12 +18,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class QuerydslJpaJsonQuery {
 
-    public static void applyPredicateAsSubquery(Predicate applyTo, PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
-        ExpressionUtils.and(applyTo, toPredicateAsSubquery(entity, jsonQueryWithRelationships));
+    public static void applyPredicateAsSubquery(BooleanBuilder applyTo, PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
+        applyTo.and(toPredicateAsSubquery(entity, jsonQueryWithRelationships));
     }
 
-    public static void applyPredicateAsSubquery(Predicate applyTo, PathBuilder entity, JsonQuery jsonQuery){
-        ExpressionUtils.and(applyTo, toPredicateAsSubquery(entity, jsonQuery));
+    public static void applyPredicateAsSubquery(BooleanBuilder applyTo, PathBuilder entity, JsonQuery jsonQuery){
+        applyTo.and(toPredicateAsSubquery(entity, jsonQuery));
     }
 
     public static Predicate toPredicateAsSubquery(PathBuilder entity, JsonQuery jsonQuery){
@@ -58,15 +59,18 @@ public class QuerydslJpaJsonQuery {
         return ExpressionUtils.allOf(conditionsPredicate, relationshipsPredicate);
     }
 
-    public static void applyPredicate(Predicate applyTo, PathBuilder entity, Node node){
+    public static void applyPredicate(BooleanBuilder applyTo, PathBuilder entity, Node node){
         QuerydslJpaJsonQueryVisitor visitor = new QuerydslJpaJsonQueryVisitor(new JPAQuery());
         Predicate predicate = node.accept(visitor, entity);
-        ExpressionUtils.and(applyTo, predicate);
+        applyTo.and(predicate);
     }
 
-    public static void applyPredicate(Predicate applyTo, PathBuilder entity, RelationshipNode node){
+    public static void applyPredicate(BooleanBuilder applyTo, PathBuilder entity, RelationshipNode node){
         QuerydslJpaJsonQueryVisitor visitor = new QuerydslJpaJsonQueryVisitor(new JPAQuery());
         Predicate predicate = node.accept(visitor, entity);
-        ExpressionUtils.and(applyTo, predicate);
+        applyTo.and(predicate);
     }
+
+
+
 }

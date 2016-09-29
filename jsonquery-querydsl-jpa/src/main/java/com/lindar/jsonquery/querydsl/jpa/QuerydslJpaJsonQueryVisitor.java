@@ -4,10 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.lindar.jsonquery.ast.*;
 import com.lindar.jsonquery.relationships.ast.*;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.Ops;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +12,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -50,6 +48,7 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     }
 
     public Predicate visit(StringComparisonNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
 
         ImmutablePair<String, PathBuilder> stringPathJoin = doJoinIfNeeded(node.getField(), entity);
 
@@ -96,6 +95,7 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
     @Override
     public Predicate visit(BigDecimalComparisonNode node, PathBuilder context) {
+        if(!node.isEnabled()) return new BooleanBuilder();
 
         ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), context);
 
@@ -141,41 +141,47 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     }
 
     @Override
-    public Predicate visit(DateComparisonNode dateComparisonNode, PathBuilder entity) {
-        DateTemplate<Date> dateExpression = Expressions.dateTemplate(Date.class, "date({0})", entity.getDate(dateComparisonNode.getField(), Date.class));
+    public Predicate visit(DateComparisonNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
 
-        switch(dateComparisonNode.getOperation()){
+        DateTemplate<Date> dateExpression = Expressions.dateTemplate(Date.class, "date({0})", entity.getDate(node.getField(), Date.class));
+
+        switch(node.getOperation()){
 
             case RELATIVE:
-                return fromRelative(dateComparisonNode, dateExpression);
+                return fromRelative(node, dateExpression);
             case ABSOLUTE:
-                return fromAbsolute(dateComparisonNode, dateExpression);
+                return fromAbsolute(node, dateExpression);
             case PRESET:
-                return fromPreset(dateComparisonNode, dateExpression);
+                return fromPreset(node, dateExpression);
         }
 
-        throw new IllegalArgumentException("Unsupported Date operator " + dateComparisonNode.getOperation());
+        throw new IllegalArgumentException("Unsupported Date operator " + node.getOperation());
     }
 
     @Override
-    public Predicate visit(BooleanComparisonNode booleanComparisonNode, PathBuilder context) {
-        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(booleanComparisonNode.getField(), context);
-        return pathJoin.getValue().getBoolean(pathJoin.getKey()).eq(booleanComparisonNode.getValue());
+    public Predicate visit(BooleanComparisonNode node, PathBuilder context) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), context);
+        return pathJoin.getValue().getBoolean(pathJoin.getKey()).eq(node.getValue());
     }
 
     @Override
-    public Predicate visit(EnumComparisonNode enumComparisonNode, PathBuilder context) {
-        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(enumComparisonNode.getField(), context);
+    public Predicate visit(EnumComparisonNode node, PathBuilder context) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), context);
 
         StringExpression stringPath = pathJoin.getValue().getEnum(pathJoin.getKey(), Enum.class).stringValue();
 
         String singleValue = "";
-        if(enumComparisonNode.getValue() != null && !enumComparisonNode.getValue().isEmpty()){
-            singleValue = enumComparisonNode.getValue().get(0);
+        if(node.getValue() != null && !node.getValue().isEmpty()){
+            singleValue = node.getValue().get(0);
         }
 
         Predicate predicate = null;
-        switch(enumComparisonNode.getOperation()){
+        switch(node.getOperation()){
 
             case EQUALS:
                 predicate = stringPath.eq(singleValue);
@@ -184,28 +190,35 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
                 predicate = stringPath.isEmpty();
                 break;
             case IN:
-                predicate = stringPath.in(enumComparisonNode.getValue());
+                predicate = stringPath.in(node.getValue());
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported Enum operator " + enumComparisonNode.getOperation());
+                throw new IllegalArgumentException("Unsupported Enum operator " + node.getOperation());
         }
 
         return predicate;
     }
 
     @Override
-    public Predicate visit(LookupComparisonNode lookupComparisonNode, PathBuilder context) {
-        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(lookupComparisonNode.getField(), context);
+    public Predicate visit(LookupComparisonNode node, PathBuilder context) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
+        Field field = FieldUtils.getField(context.getType(), node.getField(), true);
+        if(field != null && field.isAnnotationPresent(ManyToMany.class)){
+            return manyLookupVisit(node, context);
+        }
+
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), context);
 
         NumberExpression longPath = pathJoin.getValue().getNumber(pathJoin.getKey(), Long.class);
 
         Long singleValue = 0L;
-        if(lookupComparisonNode.getValue() != null && !lookupComparisonNode.getValue().isEmpty()){
-            singleValue = lookupComparisonNode.getValue().get(0);
+        if(node.getValue() != null && !node.getValue().isEmpty()){
+            singleValue = node.getValue().get(0);
         }
 
         Predicate predicate = null;
-        switch(lookupComparisonNode.getOperation()){
+        switch(node.getOperation()){
 
             case EQUALS:
                 predicate = longPath.eq(singleValue);
@@ -214,22 +227,50 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
                 predicate = longPath.isNull();
                 break;
             case IN:
-                predicate = longPath.in(lookupComparisonNode.getValue());
+                predicate = longPath.in(node.getValue());
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported Enum operator " + lookupComparisonNode.getOperation());
+                throw new IllegalArgumentException("Unsupported Enum operator " + node.getOperation());
         }
 
         return predicate;
     }
 
-    public Predicate visit(LogicalNode logicalNode, PathBuilder entity) {
-        List<Predicate> predicates = logicalNode.getItems().stream().map(node -> {
-            return node.accept(this, entity);
+    private Predicate manyLookupVisit(LookupComparisonNode node, PathBuilder context) {
+        Field field = FieldUtils.getField(context.getType(), node.getField(), true);
+
+        if(field == null){
+            throw new IllegalArgumentException();
+        }
+
+        ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+        if(manyToMany == null){
+            throw new IllegalArgumentException();
+
+        }
+        Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
+
+        String primaryKey;
+        List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
+        if(fieldsListWithAnnotation.isEmpty()){
+            primaryKey = "id";
+        } else {
+            primaryKey = fieldsListWithAnnotation.get(0).getName();
+        }
+
+        PathMetadata pathMetadata = PathMetadataFactory.forCollectionAny(context.getSet(node.getField(), Object.class));
+        return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue());
+    }
+
+    public Predicate visit(LogicalNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
+        List<Predicate> predicates = node.getItems().stream().map(n -> {
+            return n.accept(this, entity);
         }).collect(Collectors.toList());
 
         BooleanBuilder predicate = new BooleanBuilder();
-        switch(logicalNode.getOperation()){
+        switch(node.getOperation()){
 
             case AND:
                 return ExpressionUtils.allOf(predicates);
@@ -241,28 +282,32 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     }
 
     @Override
-    public Predicate visit(LogicalRelationshipNode logicalRelationshipNode, PathBuilder entity) {
-        List<Predicate> predicates = logicalRelationshipNode.getItems().stream()
-                .map(node -> node.accept(this, entity))
+    public Predicate visit(LogicalRelationshipNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
+        List<Predicate> predicates = node.getItems().stream()
+                .map(n -> n.accept(this, entity))
                 .collect(Collectors.toList());
 
-        switch(logicalRelationshipNode.getOperation()){
+        switch(node.getOperation()){
 
             case AND:
                 return ExpressionUtils.allOf(predicates);
             case OR:
                 return ExpressionUtils.anyOf(predicates);
         }
-        throw new IllegalArgumentException("Unsupported Logical Relationship operator " + logicalRelationshipNode.getOperation());
+        throw new IllegalArgumentException("Unsupported Logical Relationship operator " + node.getOperation());
     }
 
     @Override
-    public Predicate visit(RelatedRelationshipNode relatedRelationshipNode, PathBuilder context) {
+    public Predicate visit(RelatedRelationshipNode node, PathBuilder context) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
         JPAQuery subquery = new JPAQuery<>();
 
         String primaryKey;
         String foreignKey;
-        Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), relatedRelationshipNode.getField(), Object.class);
+        Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
 
         List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
         if(fieldsListWithAnnotation.isEmpty()){
@@ -271,12 +316,10 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
             primaryKey = fieldsListWithAnnotation.get(0).getName();
         }
 
-
-        Field relationshipField = FieldUtils.getField(context.getType(), relatedRelationshipNode.getField(), true);
+        Field relationshipField = FieldUtils.getField(context.getType(), node.getField(), true);
         if(relationshipField == null){
             throw new IllegalArgumentException();
         }
-
 
         if(relationshipField.isAnnotationPresent(OneToMany.class)){
             OneToMany annotation = relationshipField.getAnnotation(OneToMany.class);
@@ -294,28 +337,33 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
         PathBuilder subqueryKey = subqueryEntity.get(foreignKey).get(primaryKey);
 
+        Predicate conditionsPredicate = visit(node.getConditions(), subqueryEntity);
+        Predicate havingPredicate = visit(node.getAggregations(), subqueryEntity);
+
+        if((conditionsPredicate == null || "".equals(conditionsPredicate.toString())) && (havingPredicate == null || "".equals(havingPredicate.toString()))){
+            return new BooleanBuilder();
+        }
+
         subquery.select(subqueryKey)
                 .from(subqueryEntity)
-                .where(visit(relatedRelationshipNode.getConditions(), subqueryEntity))
+                .where(conditionsPredicate)
                 .groupBy(subqueryKey)
-                .having(visit(relatedRelationshipNode.getAggregations(), subqueryEntity));
+                .having(havingPredicate);
 
         return context.in(subquery);
     }
 
-
-
-
     @Override
-    public Predicate visit(StringComparisonAggregateNode stringComparisonAggregateNode, PathBuilder entity) {
+    public Predicate visit(StringComparisonAggregateNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
 
-        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(stringComparisonAggregateNode.getField(), entity);
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), entity);
 
         StringExpression stringPath = pathJoin.getValue().getString(pathJoin.getKey());
 
         NumberExpression numberPath = null;
 
-        switch (stringComparisonAggregateNode.getAggregateOperation()){
+        switch (node.getAggregateOperation()){
 
             case COUNT:
                 numberPath = stringPath.count();
@@ -327,9 +375,9 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
         Predicate predicate = null;
 
-        Integer singleValue = stringComparisonAggregateNode.getValue().get(0);
+        Integer singleValue = node.getValue().get(0);
 
-        switch (stringComparisonAggregateNode.getOperation()){
+        switch (node.getOperation()){
 
             case EQUALS:
                 predicate = numberPath.eq(singleValue);
@@ -347,11 +395,11 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
                 predicate = numberPath.loe(singleValue);
                 break;
             case BETWEEN:
-                predicate = numberPath.between(singleValue, stringComparisonAggregateNode.getValue().get(1));
+                predicate = numberPath.between(singleValue, node.getValue().get(1));
                 break;
         }
 
-        if(stringComparisonAggregateNode.isNegate()){
+        if(node.isNegate()){
             return predicate.not();
         }
 
@@ -359,29 +407,32 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     }
 
     @Override
-    public Predicate visit(LogicalAggregateNode logicalAggregateNode, PathBuilder entity) {
-        List<Predicate> predicates = logicalAggregateNode.getItems().stream().map(node -> {
-            return node.accept(this, entity);
+    public Predicate visit(LogicalAggregateNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
+
+        List<Predicate> predicates = node.getItems().stream().map(n -> {
+            return n.accept(this, entity);
         }).collect(Collectors.toList());
 
-        switch(logicalAggregateNode.getOperation()){
+        switch(node.getOperation()){
 
             case AND:
                 return ExpressionUtils.allOf(predicates);
             case OR:
                 return ExpressionUtils.anyOf(predicates);
         }
-        throw new IllegalArgumentException("Unsupported Logical aggregate operator " + logicalAggregateNode.getOperation());
+        throw new IllegalArgumentException("Unsupported Logical aggregate operator " + node.getOperation());
     }
 
     @Override
-    public Predicate visit(BigDecimalComparisonAggregateNode bigDecimalComparisonAggregateNode, PathBuilder entity) {
+    public Predicate visit(BigDecimalComparisonAggregateNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
 
-        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(bigDecimalComparisonAggregateNode.getField(), entity);
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), entity);
 
         NumberExpression numberPath = pathJoin.getValue().getNumber(pathJoin.getKey(), BigDecimal.class);
 
-        switch (bigDecimalComparisonAggregateNode.getAggregateOperation()){
+        switch (node.getAggregateOperation()){
 
             case SUM:
                 numberPath = numberPath.sum();
@@ -405,9 +456,9 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
         Predicate predicate = null;
 
-        BigDecimal singleValue = bigDecimalComparisonAggregateNode.getValue().get(0);
+        BigDecimal singleValue = node.getValue().get(0);
 
-        switch (bigDecimalComparisonAggregateNode.getOperation()){
+        switch (node.getOperation()){
 
             case EQUALS:
                 predicate = numberPath.eq(singleValue);
@@ -425,11 +476,11 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
                 predicate = numberPath.loe(singleValue);
                 break;
             case BETWEEN:
-                predicate = numberPath.between(bigDecimalComparisonAggregateNode.getValue().get(0), bigDecimalComparisonAggregateNode.getValue().get(1));
+                predicate = numberPath.between(node.getValue().get(0), node.getValue().get(1));
                 break;
         }
 
-        if(bigDecimalComparisonAggregateNode.isNegate()){
+        if(node.isNegate()){
             return predicate.not();
         }
 
@@ -437,15 +488,16 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
     }
 
     @Override
-    public Predicate visit(EnumComparisonAggregateNode enumComparisonAggregateNode, PathBuilder entity) {
+    public Predicate visit(EnumComparisonAggregateNode node, PathBuilder entity) {
+        if(!node.isEnabled()) return new BooleanBuilder();
 
-        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(enumComparisonAggregateNode.getField(), entity);
+        ImmutablePair<String, PathBuilder> pathJoin = doJoinIfNeeded(node.getField(), entity);
 
         StringExpression stringPath = pathJoin.getValue().getEnum(pathJoin.getKey(), Enum.class).stringValue();
 
         NumberExpression numberPath = null;
 
-        switch (enumComparisonAggregateNode.getAggregateOperation()){
+        switch (node.getAggregateOperation()){
 
             case COUNT:
                 numberPath = stringPath.count();
@@ -457,9 +509,9 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
 
         Predicate predicate = null;
 
-        Integer singleValue = enumComparisonAggregateNode.getValue().get(0);
+        Integer singleValue = node.getValue().get(0);
 
-        switch (enumComparisonAggregateNode.getOperation()){
+        switch (node.getOperation()){
 
             case EQUALS:
                 predicate = numberPath.eq(singleValue);
@@ -477,11 +529,11 @@ public class QuerydslJpaJsonQueryVisitor implements JsonQueryVisitor<Predicate, 
                 predicate = numberPath.loe(singleValue);
                 break;
             case BETWEEN:
-                predicate = numberPath.between(singleValue, enumComparisonAggregateNode.getValue().get(1));
+                predicate = numberPath.between(singleValue, node.getValue().get(1));
                 break;
         }
 
-        if(enumComparisonAggregateNode.isNegate()){
+        if(node.isNegate()){
             return predicate.not();
         }
 

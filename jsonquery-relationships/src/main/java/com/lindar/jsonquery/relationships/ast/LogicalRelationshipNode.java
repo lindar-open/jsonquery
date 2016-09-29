@@ -1,6 +1,7 @@
 package com.lindar.jsonquery.relationships.ast;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
  */
 @Data
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class LogicalRelationshipNode extends BaseRelationshipNode {
 
     private final LogicalOperation operation;

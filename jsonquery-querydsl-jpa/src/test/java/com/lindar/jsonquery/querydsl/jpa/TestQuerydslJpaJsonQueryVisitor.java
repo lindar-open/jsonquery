@@ -115,6 +115,41 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
+    @DatabaseSetup("/sampleData.xml")
+    public void testGeneratedQueryWithManyToMany() throws Exception {
+
+        LookupComparisonNode lookupComparisonNode= new LookupComparisonNode();
+        lookupComparisonNode.setField("lists");
+        lookupComparisonNode.setOperation(LookupComparisonOperation.IN);
+        ArrayList<Long> values = new ArrayList<Long>();
+        values.add(1L);
+        lookupComparisonNode.setValue(values);
+
+
+
+        JsonQueryWithRelationships holder = new JsonQueryWithRelationships();
+        holder.getConditions().getItems().add(lookupComparisonNode);
+
+        //query.fetch();
+
+        JPAQuery query2 = new JPAQuery(entityManager);
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
+
+        query2.select(entity2).from(entity2).where(booleanBuilder);
+        List fetch = query2.fetch();
+        System.out.println(fetch.size());
+
+        /*JPAQuery query2 = new JPAQuery(entityManager);
+        query2.select(entity).from(entity).where(entity.in(query));
+        query2.fetch();*/
+
+        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
+
+    }
+
+    @Test
     public void testVisitBigDecimalComparisonAggregateNode(){
         List<BigDecimal> value = Lists.newArrayList(BigDecimal.ZERO);
         List<BigDecimal> values = Lists.newArrayList(BigDecimal.ZERO, BigDecimal.TEN);
