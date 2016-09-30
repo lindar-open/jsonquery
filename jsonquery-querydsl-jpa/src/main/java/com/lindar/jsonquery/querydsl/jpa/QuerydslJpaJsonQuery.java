@@ -29,14 +29,22 @@ public class QuerydslJpaJsonQuery {
     public static Predicate toPredicateAsSubquery(PathBuilder entity, JsonQuery jsonQuery){
         JPAQuery subquery = new JPAQuery();
         subquery.select(entity).from(entity);
-        subquery.where(toPredicate(subquery, entity, jsonQuery));
+        Predicate predicate = toPredicate(subquery, entity, jsonQuery);
+        if(Util.isPredicateEmpty(predicate)){
+            return new BooleanBuilder();
+        }
+        subquery.where(predicate);
         return entity.in(subquery);
     }
 
     public static Predicate toPredicateAsSubquery(PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
         JPAQuery subquery = new JPAQuery();
         subquery.select(entity).from(entity);
-        subquery.where(toPredicate(subquery, entity, jsonQueryWithRelationships));
+        Predicate predicate = toPredicate(subquery, entity, jsonQueryWithRelationships);
+        if(Util.isPredicateEmpty(predicate)){
+            return new BooleanBuilder();
+        }
+        subquery.where(predicate);
         return entity.in(subquery);
     }
 
