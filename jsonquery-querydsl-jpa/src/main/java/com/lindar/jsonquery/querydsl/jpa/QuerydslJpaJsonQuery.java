@@ -8,6 +8,7 @@ import com.mysema.commons.lang.Assert;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import lombok.experimental.UtilityClass;
@@ -18,6 +19,14 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class QuerydslJpaJsonQuery {
 
+    public static void applyPredicateAsSubquery(EntityPathBase joinEntity, BooleanBuilder applyTo, PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
+        applyTo.and(toPredicateAsSubquery(joinEntity, entity, jsonQueryWithRelationships));
+    }
+
+    public static void applyPredicateAsSubquery(EntityPathBase joinEntity, BooleanBuilder applyTo, PathBuilder entity, JsonQuery jsonQuery){
+        applyTo.and(toPredicateAsSubquery(joinEntity, entity, jsonQuery));
+    }
+
     public static void applyPredicateAsSubquery(BooleanBuilder applyTo, PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
         applyTo.and(toPredicateAsSubquery(entity, jsonQueryWithRelationships));
     }
@@ -27,6 +36,14 @@ public class QuerydslJpaJsonQuery {
     }
 
     public static Predicate toPredicateAsSubquery(PathBuilder entity, JsonQuery jsonQuery){
+        return toPredicateAsSubquery(entity, entity, jsonQuery);
+    }
+
+    public static Predicate toPredicateAsSubquery(PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
+        return toPredicateAsSubquery(entity, entity, jsonQueryWithRelationships);
+    }
+
+    public static Predicate toPredicateAsSubquery(EntityPathBase joinEntity, PathBuilder entity, JsonQuery jsonQuery){
         JPAQuery subquery = new JPAQuery();
         subquery.select(entity).from(entity);
         Predicate predicate = toPredicate(subquery, entity, jsonQuery);
@@ -34,10 +51,10 @@ public class QuerydslJpaJsonQuery {
             return new BooleanBuilder();
         }
         subquery.where(predicate);
-        return entity.in(subquery);
+        return joinEntity.in(subquery);
     }
 
-    public static Predicate toPredicateAsSubquery(PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
+    public static Predicate toPredicateAsSubquery(EntityPathBase joinEntity, PathBuilder entity, JsonQueryWithRelationships jsonQueryWithRelationships){
         JPAQuery subquery = new JPAQuery();
         subquery.select(entity).from(entity);
         Predicate predicate = toPredicate(subquery, entity, jsonQueryWithRelationships);
@@ -45,8 +62,9 @@ public class QuerydslJpaJsonQuery {
             return new BooleanBuilder();
         }
         subquery.where(predicate);
-        return entity.in(subquery);
+        return joinEntity.in(subquery);
     }
+
 
     public static Predicate toPredicate(JPAQuery jpaQuery, PathBuilder entity, JsonQuery jsonQuery){
         Assert.notNull(jpaQuery, "JPAQuery cannot be null");
