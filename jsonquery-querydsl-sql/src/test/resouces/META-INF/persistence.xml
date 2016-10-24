@@ -5,11 +5,11 @@
     <persistence-unit name="perist"
                       transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <class>com.lindar.jsonquery.querydsl.jpa.domain.Player</class>
-        <class>com.lindar.jsonquery.querydsl.jpa.domain.PlayerList</class>
-        <class>com.lindar.jsonquery.querydsl.jpa.domain.PlayerAttrition</class>
-        <class>com.lindar.jsonquery.querydsl.jpa.domain.Brand</class>
-        <class>com.lindar.jsonquery.querydsl.jpa.domain.Affiliate</class>
+        <class>com.lindar.jsonquery.querydsl.sql.domain.Player</class>
+        <class>com.lindar.jsonquery.querydsl.sql.domain.PlayerList</class>
+        <class>com.lindar.jsonquery.querydsl.sql.domain.PlayerAttrition</class>
+        <class>com.lindar.jsonquery.querydsl.sql.domain.Brand</class>
+        <class>com.lindar.jsonquery.querydsl.sql.domain.Affiliate</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />

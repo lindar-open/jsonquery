@@ -1,4 +1,4 @@
-package com.lindar.jsonquery.querydsl.jpa.domain;
+package com.lindar.jsonquery.querydsl.sql.domain;
 
 import lombok.Data;
 
@@ -18,10 +18,6 @@ public class PlayerAttrition {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="player_id", referencedColumnName="id")
     private Player player;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="brand_id", referencedColumnName="id")
-    private Brand brand;
 
     @Temporal(value = TemporalType.DATE)
     private Date period;

@@ -9,11 +9,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <artifactId>jsonquery-querydsl-sql</artifactId>
+
     <properties>
         <spring.version>3.0.5.RELEASE</spring.version>
         <hibernate.core.version>3.5.6-Final</hibernate.core.version>
     </properties>
-    <artifactId>jsonquery-querydsl-jpa</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>com.lindar</groupId>
@@ -25,20 +27,11 @@
             <artifactId>jsonquery-relationships</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.lindar</groupId>
-            <artifactId>jsonquery-querydsl-base</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
         <dependency>
             <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-jpa</artifactId>
+            <artifactId>querydsl-sql</artifactId>
             <version>4.1.4</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -51,6 +44,7 @@
             <artifactId>hibernate-jpa-2.1-api</artifactId>
             <version>RELEASE</version>
         </dependency>
+
 
         <!-- TEST -->
         <dependency>
@@ -120,9 +114,10 @@
             <version>2.0.0</version>
             <scope>test</scope>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.lindar</groupId>
+            <artifactId>jsonquery-querydsl-base</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
-
-
 </project>

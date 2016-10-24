@@ -23,14 +23,18 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="jsonquery-core" />
+        <module name="jsonquery-querydsl-base" />
         <module name="jsonquery-querydsl-jpa" />
+        <module name="jsonquery-querydsl-sql" />
         <module name="jsonquery-relationships" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="jsonquery-core" target="1.8" />
       <module name="jsonquery-parent" target="1.8" />
+      <module name="jsonquery-querydsl-base" target="1.8" />
       <module name="jsonquery-querydsl-jpa" target="1.8" />
+      <module name="jsonquery-querydsl-sql" target="1.8" />
       <module name="jsonquery-relationships" target="1.8" />
     </bytecodeTargetLevel>
   </component>

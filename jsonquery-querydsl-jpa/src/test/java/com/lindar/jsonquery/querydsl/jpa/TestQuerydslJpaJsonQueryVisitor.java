@@ -150,6 +150,93 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
+    @DatabaseSetup("/sampleData.xml")
+    public void testGeneratedQueryWithJoinAndManyToOne() throws Exception {
+        LookupComparisonNode stringNode = new LookupComparisonNode();
+        stringNode.setField("brand.id");
+        stringNode.setOperation(LookupComparisonOperation.EQUALS);
+        ArrayList<Long> values = new ArrayList<Long>();
+        values.add(1L);
+        stringNode.setValue(values);
+
+
+        BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
+        decimalNode.setField("deposits");
+        decimalNode.setOperation(NumberComparisonOperation.EQUALS);
+        ArrayList<BigDecimal> values2 = new ArrayList<BigDecimal>();
+        values2.add(BigDecimal.ONE);
+        decimalNode.setValue(values2);
+
+        RelatedRelationshipNode relatedRelationshipNode = new RelatedRelationshipNode();
+        relatedRelationshipNode.setField("attritions");
+        relatedRelationshipNode.getConditions().getItems().add(decimalNode);
+        relatedRelationshipNode.getConditions().getItems().add(stringNode);
+
+        JsonQueryWithRelationships holder = new JsonQueryWithRelationships();
+        holder.getRelationships().getItems().add(relatedRelationshipNode);
+
+        //query.fetch();
+
+        JPAQuery query2 = new JPAQuery(entityManager);
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        query2.select(entity2).from(entity2);
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(QuerydslJpaJsonQuery.toPredicate(query2, entity2, holder));
+
+        query2.where(booleanBuilder);
+
+        //assertToString("s", query2);
+
+        List fetch = query2.fetch();
+        System.out.println(fetch.size());
+    }
+
+    @Test
+    @DatabaseSetup("/sampleData.xml")
+    public void testGeneratedQueryWithMultipleJoins() throws Exception {
+
+        LookupComparisonNode lookupComparisonNode= new LookupComparisonNode();
+        lookupComparisonNode.setField("brand.id");
+        lookupComparisonNode.setOperation(LookupComparisonOperation.IN);
+        ArrayList<Long> values = new ArrayList<Long>();
+        values.add(1L);
+        lookupComparisonNode.setValue(values);
+
+        LookupComparisonNode lookupAffiliate = new LookupComparisonNode();
+        lookupAffiliate.setField("affiliate.id");
+        lookupAffiliate.setOperation(LookupComparisonOperation.IN);
+        ArrayList<Long> valuesAffiliate = new ArrayList<Long>();
+        valuesAffiliate.add(1L);
+        lookupAffiliate.setValue(valuesAffiliate);
+
+
+        JsonQueryWithRelationships holder = new JsonQueryWithRelationships();
+        holder.getConditions().getItems().add(lookupComparisonNode);
+        holder.getConditions().getItems().add(lookupAffiliate);
+
+
+        //query.fetch();
+
+        JPAQuery query2 = new JPAQuery(entityManager);
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
+
+        query2.select(entity2).from(entity2).where(booleanBuilder);
+        List fetch = query2.fetch();
+        System.out.println(fetch.size());
+
+        assertToString("(select player from Player player where player in (select player from Player player   left join player.brand as brand   left join player.affiliate as affiliate where brand.id = ?1 and affiliate.id = ?1))", query2);
+
+        /*JPAQuery query2 = new JPAQuery(entityManager);
+        query2.select(entity).from(entity).where(entity.in(query));
+        query2.fetch();*/
+
+        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
+
+    }
+
+    @Test
     public void testVisitBigDecimalComparisonAggregateNode(){
         List<BigDecimal> value = Lists.newArrayList(BigDecimal.ZERO);
         List<BigDecimal> values = Lists.newArrayList(BigDecimal.ZERO, BigDecimal.TEN);

@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
-    <facet type="Spring" name="Spring">
-      <configuration>
-        <fileset id="fileset" name="Spring Application Context" removed="false">
-          <file>file://$MODULE_DIR$/src/test/resouces/context.xml</file>
-        </fileset>
-      </configuration>
-    </facet>
     <facet type="jpa" name="JPA">
       <configuration>
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="" />
         <datasource-mapping>
-          <factory-entry name="entityManagerFactory" value="dataSource" />
           <factory-entry name="perist" />
         </datasource-mapping>
         <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/test/resouces/META-INF/persistence.xml" />
@@ -25,9 +17,9 @@
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resouces" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -37,13 +29,15 @@
     <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.6.6" level="project" />
     <orderEntry type="module" module-name="jsonquery-relationships" />
-    <orderEntry type="module" module-name="jsonquery-querydsl-base" />
-    <orderEntry type="library" name="Maven: com.querydsl:querydsl-jpa:4.1.4" level="project" />
+    <orderEntry type="library" name="Maven: com.querydsl:querydsl-sql:4.1.4" level="project" />
     <orderEntry type="library" name="Maven: com.querydsl:querydsl-core:4.1.4" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:1.3.9" level="project" />
     <orderEntry type="library" name="Maven: com.mysema.commons:mysema-commons-lang:0.2.4" level="project" />
-    <orderEntry type="library" name="Maven: com.infradna.tool:bridge-method-annotation:1.13" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:1.6" level="project" />
+    <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.6.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.servicemix.bundles:org.apache.servicemix.bundles.javax-inject:1_2" level="project" />
+    <orderEntry type="library" name="Maven: com.infradna.tool:bridge-method-annotation:1.13" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.4" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Draft-16" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-context:3.0.5.RELEASE" level="project" />
@@ -77,5 +71,7 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.slf4j:slf4j-log4j12:1.7.21" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hsqldb:hsqldb:2.0.0" level="project" />
+    <orderEntry type="module" module-name="jsonquery-querydsl-base" />
+    <orderEntry type="library" name="Maven: com.querydsl:querydsl-jpa:4.1.4" level="project" />
   </component>
 </module>

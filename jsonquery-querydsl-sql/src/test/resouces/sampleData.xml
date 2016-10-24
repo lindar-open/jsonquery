@@ -10,6 +10,6 @@
     <Player id="1" username="user1" deposits="100" brand_id="1" affiliate_id="1"/>
     <Player id="2" username="user2" deposits="500" brand_id="1" affiliate_id="1"/>
     <Player id="3" username="user3" deposits="0" brand_id="2" affiliate_id="2"/>
-    <PlayerAttrition id="1" deposits="1000" player_id="2" brand_id="1"/>
+    <PlayerAttrition id="1" deposits="1000" player_id="2"/>
 
 </dataset>

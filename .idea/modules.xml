@@ -4,7 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/jsonquery-core/jsonquery-core.iml" filepath="$PROJECT_DIR$/jsonquery-core/jsonquery-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/jsonquery-parent.iml" filepath="$PROJECT_DIR$/jsonquery-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jsonquery-querydsl-base/jsonquery-querydsl-base.iml" filepath="$PROJECT_DIR$/jsonquery-querydsl-base/jsonquery-querydsl-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/jsonquery-querydsl-jpa/jsonquery-querydsl-jpa.iml" filepath="$PROJECT_DIR$/jsonquery-querydsl-jpa/jsonquery-querydsl-jpa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jsonquery-querydsl-sql/jsonquery-querydsl-sql.iml" filepath="$PROJECT_DIR$/jsonquery-querydsl-sql/jsonquery-querydsl-sql.iml" />
       <module fileurl="file://$PROJECT_DIR$/jsonquery-relationships/jsonquery-relationships.iml" filepath="$PROJECT_DIR$/jsonquery-relationships/jsonquery-relationships.iml" />
     </modules>
   </component>

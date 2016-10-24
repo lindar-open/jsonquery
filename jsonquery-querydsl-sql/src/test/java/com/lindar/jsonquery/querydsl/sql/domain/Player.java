@@ -1,4 +1,4 @@
-package com.lindar.jsonquery.querydsl.jpa.domain;
+package com.lindar.jsonquery.querydsl.sql.domain;
 
 import lombok.Data;
 
