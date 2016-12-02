@@ -41,7 +41,9 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     }
 
     private Predicate manyLookupVisit(LookupComparisonNode node, PathBuilder context) {
-        Field field = FieldUtils.getField(context.getType(), node.getField(), true);
+        String[] fieldParts = DOT.split(node.getField());
+
+        Field field = FieldUtils.getField(context.getType(), fieldParts[0], true);
 
         if(field == null){
             throw new IllegalArgumentException();
@@ -52,7 +54,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             throw new IllegalArgumentException();
 
         }
-        Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
+        Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), fieldParts[0], Object.class);
 
         String primaryKey;
         List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
@@ -62,7 +64,10 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             primaryKey = fieldsListWithAnnotation.get(0).getName();
         }
 
-        PathMetadata pathMetadata = PathMetadataFactory.forCollectionAny(context.getSet(node.getField(), Object.class));
+        PathMetadata pathMetadata = PathMetadataFactory.forCollectionAny(context.getSet(fieldParts[0], Object.class));
+        if(node.isNegate()){
+            return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue()).not();
+        }
         return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue());
     }
 
@@ -70,7 +75,8 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     public Predicate visit(LookupComparisonNode node, PathBuilder context) {
         if(!node.isEnabled()) return new BooleanBuilder();
 
-        Field field = FieldUtils.getField(context.getType(), node.getField(), true);
+        String[] fieldParts = DOT.split(node.getField());
+        Field field = FieldUtils.getField(context.getType(), fieldParts[0], true);
         if(field != null && field.isAnnotationPresent(ManyToMany.class)){
             return manyLookupVisit(node, context);
         }
@@ -98,6 +104,10 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported Enum operator " + node.getOperation());
+        }
+
+        if(node.isNegate()){
+            return predicate.not();
         }
 
         return predicate;

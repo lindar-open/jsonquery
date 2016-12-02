@@ -480,6 +480,11 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
     }
 
     private Date fromRelativeDate(DateComparisonNode dateComparisonNode){
+
+        if(dateComparisonNode.getRelativePeriod() == null){
+            return fromLocalDate(LocalDate.now().minusDays(0));
+        }
+
         switch(dateComparisonNode.getRelativePeriod()){
             case DAY:
                 return fromLocalDate(LocalDate.now().minusDays(dateComparisonNode.getRelativeValue()));
