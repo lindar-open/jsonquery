@@ -242,7 +242,10 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         Predicate predicate = null;
 
-        Integer singleValue = node.getValue().get(0);
+        Integer singleValue = 0;
+        if(node.getValue() != null && !node.getValue().isEmpty()){
+            singleValue = node.getValue().get(0);
+        }
 
         switch (node.getOperation()){
 
@@ -323,7 +326,14 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         Predicate predicate = null;
 
-        BigDecimal singleValue = node.getValue().get(0);
+        if(node.getValue() == null || node.getValue().isEmpty()){
+            return new BooleanBuilder();
+        }
+
+        BigDecimal singleValue = BigDecimal.ZERO;
+        if(node.getValue() != null && !node.getValue().isEmpty()){
+            singleValue = node.getValue().get(0);
+        }
 
         switch (node.getOperation()){
 
@@ -376,7 +386,10 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         Predicate predicate = null;
 
-        Integer singleValue = node.getValue().get(0);
+        Integer singleValue = 0;
+        if(node.getValue() != null && !node.getValue().isEmpty()){
+            singleValue = node.getValue().get(0);
+        }
 
         switch (node.getOperation()){
 
