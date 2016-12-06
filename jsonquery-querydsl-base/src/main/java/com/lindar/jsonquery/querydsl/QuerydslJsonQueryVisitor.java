@@ -450,6 +450,8 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
             case LAST_YEAR:
                 return dateExpression.goe(fromLocalDate(LocalDate.now().minusYears(1).with(TemporalAdjusters.firstDayOfYear())))
                         .and(dateExpression.loe(fromLocalDate(LocalDate.now().minusYears(1).with(TemporalAdjusters.lastDayOfYear()))));
+            case ANNIVERSARY:
+                return dateExpression.month().eq(LocalDate.now().getMonthValue()).and(dateExpression.dayOfMonth().eq(LocalDate.now().getDayOfMonth()));
         }
 
         throw new IllegalArgumentException("Date operation not supported");

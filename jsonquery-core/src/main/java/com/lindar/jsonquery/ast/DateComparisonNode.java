@@ -65,7 +65,8 @@ public class DateComparisonNode extends ComparisonNode {
         CURRENT_MONTH,
         LAST_MONTH,
         CURRENT_YEAR,
-        LAST_YEAR
+        LAST_YEAR,
+        ANNIVERSARY
     }
 
     public enum Operation {
