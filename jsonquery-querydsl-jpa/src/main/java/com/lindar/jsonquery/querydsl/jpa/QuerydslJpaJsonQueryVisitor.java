@@ -171,7 +171,11 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             .groupBy(subqueryKey)
             .having(havingPredicate);
 
-        return context.in(subquery);
+        if(node.isNegate()){
+            return context.in(subquery).not();
+        } else {
+            return context.in(subquery);
+        }
     }
 
 

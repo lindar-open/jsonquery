@@ -180,6 +180,10 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 throw new IllegalArgumentException("Unsupported Enum operator " + node.getOperation());
         }
 
+        if(node.isNegate()){
+            return predicate.not();
+        }
+
         return predicate;
     }
 
@@ -354,6 +358,9 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 break;
             case BETWEEN:
                 predicate = numberPath.between(node.getValue().get(0), node.getValue().get(1));
+                break;
+            case EMPTY:
+                predicate = numberPath.isNull();
                 break;
         }
 

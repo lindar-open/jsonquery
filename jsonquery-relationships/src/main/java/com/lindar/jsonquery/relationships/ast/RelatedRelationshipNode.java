@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 public class RelatedRelationshipNode extends BaseRelationshipNode {
 
     private String field;
+    private boolean negate = false;
 
     private LogicalNode conditions = new LogicalNode(LogicalNode.LogicalOperation.AND);
     private LogicalAggregateNode aggregations = new LogicalAggregateNode(LogicalAggregateNode.LogicalAggregateOperation.AND);

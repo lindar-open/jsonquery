@@ -11,7 +11,8 @@ public enum AggregateComparisonOperation implements ComparisonOperation {
     LESS_THAN(1),
     GREATER_THAN_OR_EQUAL(1),
     LESS_THAN_OR_EQUAL(1),
-    BETWEEN(2);
+    BETWEEN(2),
+    EMPTY(0);
 
     private int maxArgumentCount;
     private int minArgumentCount;
