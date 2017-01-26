@@ -97,6 +97,17 @@ public class QuerydslJpaJsonQuery {
         applyTo.and(predicate);
     }
 
+    public static void applyPredicate(BooleanBuilder applyTo, PathBuilder entity, JsonQueryWithRelationships node){
+        QuerydslJpaJsonQueryVisitor visitor = new QuerydslJpaJsonQueryVisitor(new JPAQuery());
+        Predicate predicate = node.getRelationships().accept(visitor, entity);
+        applyTo.and(predicate);
+    }
+
+    public static void applyPredicate(BooleanBuilder applyTo, PathBuilder entity, JsonQuery node){
+        QuerydslJpaJsonQueryVisitor visitor = new QuerydslJpaJsonQueryVisitor(new JPAQuery());
+        Predicate predicate = node.getConditions().accept(visitor, entity);
+        applyTo.and(predicate);
+    }
 
 
 }
