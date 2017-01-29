@@ -36,7 +36,6 @@
     <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.16.8" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.6.6" level="project" />
-    <orderEntry type="module" module-name="jsonquery-relationships" />
     <orderEntry type="module" module-name="jsonquery-querydsl-base" />
     <orderEntry type="library" name="Maven: com.querydsl:querydsl-jpa:4.1.4" level="project" />
     <orderEntry type="library" name="Maven: com.querydsl:querydsl-core:4.1.4" level="project" />

@@ -14,4 +14,12 @@ public interface JsonQueryVisitor<R, C>  {
     R visit(EnumComparisonNode enumComparisonNode, C context);
 
     R visit(LookupComparisonNode lookupComparisonNode, C context);
+
+    R visit(LogicalRelationshipNode logicalRelationshipNode, C context);
+    R visit(RelatedRelationshipNode relatedRelationshipNode, C context);
+    R visit(StringComparisonAggregateNode stringComparisonAggregateNode, C context);
+    R visit(LogicalAggregateNode logicalAggregateNode, C context);
+    R visit(BigDecimalComparisonAggregateNode bigDecimalComparisonAggregateNode, C context);
+    R visit(EnumComparisonAggregateNode enumComparisonAggregateNode, C context);
+
 }

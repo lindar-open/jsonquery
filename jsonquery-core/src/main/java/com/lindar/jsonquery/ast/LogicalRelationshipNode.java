@@ -1,4 +1,4 @@
-package com.lindar.jsonquery.relationships.ast;
+package com.lindar.jsonquery.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,11 +18,11 @@ public class LogicalRelationshipNode extends BaseRelationshipNode {
     private final LogicalOperation operation;
     private List<RelatedRelationshipNode> items = new ArrayList<RelatedRelationshipNode>();
 
-    public <R, C> R accept(JsonQueryRelationshipVisitor<R, C> v, C context) {
+    public <R, C> R accept(JsonQueryVisitor<R, C> v, C context) {
         return v.visit(this, context);
     }
 
-    public <R, C> R accept(JsonQueryRelationshipVisitor<R, C> v) {
+    public <R, C> R accept(JsonQueryVisitor<R, C> v) {
         return v.visit(this, null);
     }
 

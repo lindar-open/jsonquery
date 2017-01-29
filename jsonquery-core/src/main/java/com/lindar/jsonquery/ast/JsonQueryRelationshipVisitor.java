@@ -1,4 +1,4 @@
-package com.lindar.jsonquery.relationships.ast;
+package com.lindar.jsonquery.ast;
 
 /**
  * Created by stevenhills on 24/09/2016.

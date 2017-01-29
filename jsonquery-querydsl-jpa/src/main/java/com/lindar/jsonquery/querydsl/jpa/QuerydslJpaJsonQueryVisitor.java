@@ -2,8 +2,8 @@ package com.lindar.jsonquery.querydsl.jpa;
 
 import com.google.common.collect.HashBasedTable;
 import com.lindar.jsonquery.ast.LookupComparisonNode;
+import com.lindar.jsonquery.ast.RelatedRelationshipNode;
 import com.lindar.jsonquery.querydsl.QuerydslJsonQueryVisitor;
-import com.lindar.jsonquery.relationships.ast.RelatedRelationshipNode;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.PathMetadata;

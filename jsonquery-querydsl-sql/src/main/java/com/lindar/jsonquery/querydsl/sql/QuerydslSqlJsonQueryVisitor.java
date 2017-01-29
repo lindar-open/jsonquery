@@ -2,8 +2,8 @@ package com.lindar.jsonquery.querydsl.sql;
 
 import com.google.common.base.CaseFormat;
 import com.lindar.jsonquery.ast.LookupComparisonNode;
+import com.lindar.jsonquery.ast.RelatedRelationshipNode;
 import com.lindar.jsonquery.querydsl.QuerydslJsonQueryVisitor;
-import com.lindar.jsonquery.relationships.ast.RelatedRelationshipNode;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.NumberExpression;

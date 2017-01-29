@@ -11,7 +11,6 @@
     <modules>
         <module>jsonquery-core</module>
         <module>jsonquery-querydsl-jpa</module>
-        <module>jsonquery-relationships</module>
         <module>jsonquery-querydsl-sql</module>
         <module>jsonquery-querydsl-base</module>
     </modules>

@@ -14,6 +14,10 @@ public class HashCodeVisitor implements JsonQueryVisitor<Integer, Void> {
     public Integer visit(BaseNode node) {
         return node.getReference().hashCode();
     }
+    public Integer visit(Node node) {
+        return node.hashCode();
+    }
+
 
     @Override
     public Integer visit(StringComparisonNode node, Void context) {
@@ -48,5 +52,35 @@ public class HashCodeVisitor implements JsonQueryVisitor<Integer, Void> {
     @Override
     public Integer visit(LookupComparisonNode node, Void context) {
         return visit((BaseNode) node);
+    }
+
+    @Override
+    public Integer visit(LogicalRelationshipNode node, Void context) {
+        return visit((Node) node);
+    }
+
+    @Override
+    public Integer visit(RelatedRelationshipNode node, Void context) {
+        return visit((Node) node);
+    }
+
+    @Override
+    public Integer visit(StringComparisonAggregateNode node, Void context) {
+        return visit((Node) node);
+    }
+
+    @Override
+    public Integer visit(LogicalAggregateNode node, Void context) {
+        return visit((Node) node);
+    }
+
+    @Override
+    public Integer visit(BigDecimalComparisonAggregateNode node, Void context) {
+        return visit((Node) node);
+    }
+
+    @Override
+    public Integer visit(EnumComparisonAggregateNode node, Void context) {
+        return visit((Node) node);
     }
 }

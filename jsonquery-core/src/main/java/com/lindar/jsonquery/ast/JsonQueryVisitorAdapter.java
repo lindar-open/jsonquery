@@ -32,6 +32,36 @@ public class JsonQueryVisitorAdapter<R, C> implements JsonQueryVisitor<R, C> {
         return null;
     }
 
+    @Override
+    public R visit(LogicalRelationshipNode logicalRelationshipNode, C context) {
+        return null;
+    }
+
+    @Override
+    public R visit(RelatedRelationshipNode relatedRelationshipNode, C context) {
+        return null;
+    }
+
+    @Override
+    public R visit(StringComparisonAggregateNode stringComparisonAggregateNode, C context) {
+        return null;
+    }
+
+    @Override
+    public R visit(LogicalAggregateNode logicalAggregateNode, C context) {
+        return null;
+    }
+
+    @Override
+    public R visit(BigDecimalComparisonAggregateNode bigDecimalComparisonAggregateNode, C context) {
+        return null;
+    }
+
+    @Override
+    public R visit(EnumComparisonAggregateNode enumComparisonAggregateNode, C context) {
+        return null;
+    }
+
     public R visit(NumberComparisonNode numberComparisonNode, C context) {
         return null;
     }

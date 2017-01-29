@@ -1,4 +1,4 @@
-package com.lindar.jsonquery.relationships.ast;
+package com.lindar.jsonquery.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 @Data
 @EqualsAndHashCode(of="reference")
-public abstract class BaseRelationshipNode implements RelationshipNode, Serializable {
+public abstract class BaseAggregateNode implements AggregateNode, Serializable {
     private String reference = UUID.randomUUID().toString();
     private boolean enabled = true;
 }

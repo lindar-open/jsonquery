@@ -1,7 +1,6 @@
-package com.lindar.jsonquery.relationships.ast;
+package com.lindar.jsonquery.ast;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.lindar.jsonquery.ast.JsonQueryConstants;
 
 /**
  * Created by stevenhills on 24/09/2016.

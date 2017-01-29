@@ -1,4 +1,4 @@
-package com.lindar.jsonquery.relationships.ast;
+package com.lindar.jsonquery.ast;
 
 import lombok.EqualsAndHashCode;
 

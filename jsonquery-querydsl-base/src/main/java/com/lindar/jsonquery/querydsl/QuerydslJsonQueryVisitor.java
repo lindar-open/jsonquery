@@ -1,7 +1,6 @@
 package com.lindar.jsonquery.querydsl;
 
 import com.lindar.jsonquery.ast.*;
-import com.lindar.jsonquery.relationships.ast.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Ops;
@@ -22,9 +21,7 @@ import java.util.stream.Collectors;
 /**
  * Created by stevenhills on 24/09/2016.
  */
-public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predicate, PathBuilder>,
-        JsonQueryRelationshipVisitor<Predicate, PathBuilder>,
-        JsonQueryAggregateVisitor<Predicate, PathBuilder> {
+public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predicate, PathBuilder>, JsonQueryAggregateVisitor<Predicate, PathBuilder> {
     
     public Predicate visit(StringComparisonNode node, PathBuilder entity) {
         if(!node.isEnabled()) return new BooleanBuilder();
