@@ -3,6 +3,7 @@ package com.lindar.jsonquery.querydsl.sql;
 import com.lindar.jsonquery.JsonQuery;
 import com.lindar.jsonquery.ast.Node;
 import com.lindar.jsonquery.ast.RelationshipNode;
+import com.lindar.jsonquery.querydsl.QuerydslQueryable;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
@@ -50,6 +51,14 @@ public class QuerydslSqlJsonQuery {
         return jsonQuery.getConditions().accept(visitor, entity);
     }
 
+    public static Predicate toPredicate(SQLQuery sqlQuery, PathBuilder entity, QuerydslQueryable queryable, QuerydslSqlSpec querydslSqlSpec){
+        Assert.notNull(sqlQuery, "SQLQuery cannot be null");
+        Assert.notNull(sqlQuery.getMetadata().getProjection(), "Query Projection must be set before predicate");
+
+        QuerydslSqlJsonQueryVisitor visitor = new QuerydslSqlJsonQueryVisitor(sqlQuery, querydslSqlSpec);
+        return queryable.getQueryableNode().accept(visitor, entity);
+    }
+
     public static void applyPredicate(BooleanBuilder applyTo, PathBuilder entity, Node node, QuerydslSqlSpec querydslSqlSpec){
         QuerydslSqlJsonQueryVisitor visitor = new QuerydslSqlJsonQueryVisitor(new SQLQuery(), querydslSqlSpec);
         Predicate predicate = node.accept(visitor, entity);
@@ -62,7 +71,20 @@ public class QuerydslSqlJsonQuery {
         applyTo.and(predicate);
     }
 
+    public static Predicate toPredicateAsSubquery(PathBuilder entity, QuerydslQueryable queryable, QuerydslSqlSpec querydslSqlSpec){
+        return toPredicateAsSubquery(entity, entity, queryable, querydslSqlSpec);
+    }
 
+    public static Predicate toPredicateAsSubquery(PathBuilder joinEntity, PathBuilder entity, QuerydslQueryable queryable, QuerydslSqlSpec querydslSqlSpec){
+        SQLQuery subquery = new SQLQuery();
+        subquery.select(entity.get("id")).from(entity);
+        Predicate predicate = toPredicate(subquery, entity, queryable, querydslSqlSpec);
+        if(Util.isPredicateEmpty(predicate)){
+            return new BooleanBuilder();
+        }
+        subquery.where(predicate);
+        return joinEntity.get("id").in(subquery);
+    }
 
 
 }
