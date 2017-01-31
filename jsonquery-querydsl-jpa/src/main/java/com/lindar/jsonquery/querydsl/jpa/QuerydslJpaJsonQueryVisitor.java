@@ -5,13 +5,13 @@ import com.lindar.jsonquery.ast.LookupComparisonNode;
 import com.lindar.jsonquery.ast.RelatedRelationshipNode;
 import com.lindar.jsonquery.querydsl.QuerydslJsonQueryVisitor;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.PathMetadata;
-import com.querydsl.core.types.PathMetadataFactory;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.*;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.PathBuilderValidator;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -33,8 +33,8 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     protected static final Pattern DOT = Pattern.compile("\\.");
 
     protected HashBasedTable<PathBuilder, String, PathBuilder> joins = HashBasedTable.create();
-    protected JPAQuery query;
-    protected Stack<JPAQuery> queryStack = new Stack<>();
+    protected JPQLQuery query;
+    protected Stack<JPQLQuery> queryStack = new Stack<>();
 
     public QuerydslJpaJsonQueryVisitor(JPAQuery query){
         this.query = query;
@@ -117,7 +117,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     public Predicate visit(RelatedRelationshipNode node, PathBuilder context) {
         if(!node.isEnabled()) return new BooleanBuilder();
 
-        JPAQuery subquery = new JPAQuery<>();
+        JPQLQuery<Integer> subquery = JPAExpressions.select(Expressions.constant(1));
 
         String primaryKey;
         String foreignKey;
@@ -149,32 +149,32 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
         PathBuilder subqueryEntity = new PathBuilder(relatedClass, relatedClass.getSimpleName());
 
-        PathBuilder subqueryKey = subqueryEntity.get(foreignKey).get(primaryKey);
+        PathBuilder subqueryKey = subqueryEntity.get(foreignKey);//.get(primaryKey);
 
 
-        subquery.select(subqueryKey)
-            .from(subqueryEntity);
+        subquery.from(subqueryEntity);
 
-        queryStack.push(query);
-        query = subquery;
+        queryStack.push(this.query);
+        this.query = subquery;
 
         Predicate conditionsPredicate = visit(node.getConditions(), subqueryEntity);
         Predicate havingPredicate = visit(node.getAggregations(), subqueryEntity);
 
-        query = queryStack.pop();
+        this.query = queryStack.pop();
         if((conditionsPredicate == null || "".equals(conditionsPredicate.toString())) && (havingPredicate == null || "".equals(havingPredicate.toString()))){
             return new BooleanBuilder();
         }
 
 
-        subquery.where(conditionsPredicate)
+
+        subquery.where(ExpressionUtils.allOf(conditionsPredicate, context.eq(subqueryKey)))
             .groupBy(subqueryKey)
             .having(havingPredicate);
 
         if(node.isNegate()){
-            return context.in(subquery).not();
+            return subquery.notExists();
         } else {
-            return context.in(subquery);
+            return subquery.exists();
         }
     }
 
