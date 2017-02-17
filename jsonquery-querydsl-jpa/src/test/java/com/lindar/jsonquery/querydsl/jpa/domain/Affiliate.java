@@ -2,6 +2,7 @@ package com.lindar.jsonquery.querydsl.jpa.domain;
 
 import lombok.Data;
 
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -13,5 +14,7 @@ import javax.persistence.Id;
 public class Affiliate {
     @Id
     private long id;
-    private String type;
+
+    @Convert(converter = AffiliateTypeConverter.class)
+    private AffiliateType type;
 }

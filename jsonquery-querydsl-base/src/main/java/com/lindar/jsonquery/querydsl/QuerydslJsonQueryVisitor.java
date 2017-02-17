@@ -2,6 +2,7 @@ package com.lindar.jsonquery.querydsl;
 
 import com.lindar.jsonquery.ast.*;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
@@ -28,7 +29,8 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         ImmutablePair<String, PathBuilder> stringPathJoin = processPath(node.getField(), entity);
 
-        StringPath stringPath = stringPathJoin.getValue().getString(stringPathJoin.getKey());
+        StringExpression stringPath = Expressions.stringOperation(Ops.STRING_CAST, new Expression[]{stringPathJoin.getValue().getString(stringPathJoin.getKey())});
+        //StringExpression stringPath = stringPathJoin.getValue().getString(stringPathJoin.getKey()).stringValue();
 
         String singleValue = "";
         if(node.getValue() != null && !node.getValue().isEmpty()){

@@ -74,10 +74,10 @@ public class TestQuerydslJpaJsonQueryVisitor {
     public void testGeneratedQueryWithRelationships() throws Exception {
 
         StringComparisonNode stringNode = new StringComparisonNode();
-        stringNode.setField("brand.type");
+        stringNode.setField("affiliate.type");
         stringNode.setOperation(StringComparisonOperation.BEGINS_WITH);
         ArrayList<String> values = new ArrayList<String>();
-        values.add("dragonfish");
+        values.add("ORGANIC");
         stringNode.setValue(values);
 
 
@@ -107,6 +107,9 @@ public class TestQuerydslJpaJsonQueryVisitor {
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
+
+        System.out.println(toString(query2));
+
         List fetch = query2.fetch();
         System.out.println(fetch.size());
 
@@ -530,5 +533,10 @@ public class TestQuerydslJpaJsonQueryVisitor {
     protected static void assertToString(String expected, Expression<?> expr) {
         JPQLSerializer serializer = new JPQLSerializer(HQLTemplates.DEFAULT, null);
         assertEquals(expected, serializer.handle(expr).toString().replace("\n", " "));
+    }
+
+    protected static String toString(Expression<?> expr) {
+        JPQLSerializer serializer = new JPQLSerializer(HQLTemplates.DEFAULT, null);
+        return serializer.handle(expr).toString().replace("\n", " ");
     }
 }
