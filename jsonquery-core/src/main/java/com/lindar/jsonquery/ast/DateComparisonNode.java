@@ -77,7 +77,8 @@ public class DateComparisonNode extends ComparisonNode {
 
     public enum RelativeOperation {
         IN_THE_LAST,
-        MORE_THAN
+        MORE_THAN,
+        IS
     }
 
     public enum RelativePeriod {

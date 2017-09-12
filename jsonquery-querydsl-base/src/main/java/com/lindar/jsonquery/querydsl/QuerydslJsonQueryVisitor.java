@@ -466,11 +466,12 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
     private Predicate fromRelative(DateComparisonNode dateComparisonNode, DateTemplate<Date> dateExpression){
 
         switch (dateComparisonNode.getRelativeOperation()){
-
             case IN_THE_LAST:
                 return dateExpression.goe(fromRelativeDate(dateComparisonNode));
             case MORE_THAN:
                 return dateExpression.lt(fromRelativeDate(dateComparisonNode));
+            case IS:
+                return dateExpression.eq(fromRelativeDate(dateComparisonNode));
         }
 
         throw new IllegalArgumentException("Date operation not supported");
