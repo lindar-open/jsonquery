@@ -467,7 +467,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         switch (dateComparisonNode.getRelativeOperation()){
             case IN_THE_LAST:
-                return dateExpression.goe(fromRelativeDate(dateComparisonNode));
+                return dateExpression.gt(fromRelativeDate(dateComparisonNode));
             case MORE_THAN:
                 return dateExpression.lt(fromRelativeDate(dateComparisonNode));
             case IS:
