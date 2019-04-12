@@ -35,5 +35,16 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>lindar-maven-repo-release</id>
+            <url>http://nexus-lindar.mircloud.host/content/repositories/lindar-maven-repo/</url>
+        </snapshotRepository>
+        <repository>
+            <id>lindar-maven-repo</id>
+            <url>http://nexus-lindar.mircloud.host/content/repositories/lindar-maven-repo-release/</url>
+        </repository>
+    </distributionManagement>
+
 
 </project>
