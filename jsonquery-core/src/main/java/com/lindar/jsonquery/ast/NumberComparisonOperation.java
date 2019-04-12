@@ -10,7 +10,8 @@ public enum NumberComparisonOperation implements ComparisonOperation {
     GREATER_THAN_OR_EQUAL(1),
     LESS_THAN_OR_EQUAL(1),
     BETWEEN(2),
-    EMPTY(0);
+    EMPTY(0),
+    IN(-1);
 
     private int maxArgumentCount;
     private int minArgumentCount;

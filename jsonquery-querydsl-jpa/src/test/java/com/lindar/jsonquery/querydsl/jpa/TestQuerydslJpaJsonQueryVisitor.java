@@ -380,6 +380,11 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         NumberComparisonOperation.BETWEEN,
                         values));
 
+        assertToString("player.deposits in (?1)",
+                createBigDecimalComparisonNodePredicate("deposits",
+                        NumberComparisonOperation.IN,
+                        values));
+
         assertToString("player.deposits is null",
                 createBigDecimalComparisonNodePredicate("deposits",
                         NumberComparisonOperation.EMPTY,
@@ -391,11 +396,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         value, true));
     }
 
-    @Test
-    public void testVisitDateComparisonNode() {
 
-
-    }
 
     @Test
     public void testVisitLogicalNode(){

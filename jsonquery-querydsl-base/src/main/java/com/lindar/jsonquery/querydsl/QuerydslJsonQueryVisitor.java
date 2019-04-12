@@ -109,6 +109,9 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
             case EMPTY:
                 predicate = numberPath.isNull();
                 break;
+            case IN:
+                predicate = numberPath.in(node.getValue());
+                break;
         }
 
         if(node.isNegate()){
