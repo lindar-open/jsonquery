@@ -29,8 +29,8 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         ImmutablePair<String, PathBuilder> stringPathJoin = processPath(node.getField(), entity);
 
-        StringExpression stringPath = Expressions.stringOperation(Ops.STRING_CAST, new Expression[]{stringPathJoin.getValue().getString(stringPathJoin.getKey())});
-        //StringExpression stringPath = stringPathJoin.getValue().getString(stringPathJoin.getKey()).stringValue();
+        //StringExpression stringPath = Expressions.stringOperation(Ops.STRING_CAST, new Expression[]{stringPathJoin.getValue().getString(stringPathJoin.getKey())});
+        StringExpression stringPath = stringPathJoin.getValue().getString(stringPathJoin.getKey()).stringValue();
 
         String singleValue = "";
         if(node.getValue() != null && !node.getValue().isEmpty()){
