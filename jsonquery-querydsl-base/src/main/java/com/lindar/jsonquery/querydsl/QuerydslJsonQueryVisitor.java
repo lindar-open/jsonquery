@@ -57,7 +57,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 predicate = stringPath.like("%"+singleValue);
                 break;
             case EMPTY:
-                predicate = stringPath.isEmpty();
+                predicate = stringPath.eq("");
                 break;
             case IN:
                 predicate = stringPath.in(node.getValue());
@@ -173,7 +173,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 predicate = stringPath.eq(singleValue);
                 break;
             case EMPTY:
-                predicate = stringPath.isEmpty();
+                predicate = stringPath.eq("");
                 break;
             case IN:
                 predicate = stringPath.in(node.getValue());
