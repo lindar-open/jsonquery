@@ -73,12 +73,12 @@ public class TestQuerydslJpaJsonQueryVisitor {
     @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithRelationships() throws Exception {
 
-        StringComparisonNode stringNode = new StringComparisonNode();
-        stringNode.setField("affiliate.type");
-        stringNode.setOperation(StringComparisonOperation.BEGINS_WITH);
+        EnumComparisonNode enumNode = new EnumComparisonNode();
+        enumNode.setField("affiliate.type");
+        enumNode.setOperation(EnumComparisonOperation.EQUALS);
         ArrayList<String> values = new ArrayList<String>();
         values.add("ORGANIC");
-        stringNode.setValue(values);
+        enumNode.setValue(values);
 
 
         BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
@@ -93,7 +93,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         relatedRelationshipNode.getConditions().getItems().add(decimalNode);
 
         JsonQuery holder = new JsonQuery();
-        holder.getConditions().getItems().add(stringNode);
+        holder.getConditions().getItems().add(enumNode);
         holder.getConditions().getItems().add(relatedRelationshipNode);
         holder.getConditions().getItems().add(relatedRelationshipNode);
         holder.getConditions().getItems().add(relatedRelationshipNode);
@@ -314,7 +314,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         StringComparisonOperation.CONTAINS,
                         value));
 
-        assertToString("length(player.promocode) = 0",
+        assertToString("player.promocode = ?1",
                 createStringComparisonNodePredicate("promocode",
                         StringComparisonOperation.EMPTY,
                         value));

@@ -48,7 +48,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 predicate = stringPath.like("%"+singleValue+"%");
                 break;
             case REGEX:
-                predicate = Expressions.predicate(Ops.MATCHES, Expressions.constant(singleValue), stringPath);
+                predicate = stringPath.matches(singleValue);
                 break;
             case BEGINS_WITH:
                 predicate = stringPath.like(singleValue+"%");

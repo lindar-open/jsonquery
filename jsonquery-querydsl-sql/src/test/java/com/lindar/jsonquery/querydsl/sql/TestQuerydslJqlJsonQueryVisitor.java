@@ -324,37 +324,37 @@ public class TestQuerydslJqlJsonQueryVisitor {
                 StringComparisonOperation.EQUALS,
                 value));
 
-        assertToString("player.promocode like test escape '!'",
+        assertToString("player.promocode like test%",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.BEGINS_WITH,
                 value));
 
-        assertToString("player.promocode like test escape '!'",
+        assertToString("player.promocode like %test%",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.CONTAINS,
                 value));
 
-        assertToString("length(player.promocode) = 0",
+        assertToString("player.promocode = ",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.EMPTY,
                 value));
 
-        assertToString("player.promocode like test escape '!'",
+        assertToString("player.promocode like %test",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.ENDS_WITH,
                 value));
 
-        assertToString("test like player.promocode escape '!'",
+        assertToString("matches(test,player.promocode)",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.REGEX,
                 value));
 
-        assertToString("player.promocode in (test)",
+        assertToString("player.promocode in [test, another test]",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.IN,
                 values));
 
-        assertToString("not player.promocode = test",
+        assertToString("!(player.promocode = test)",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.EQUALS,
                 values, true));
