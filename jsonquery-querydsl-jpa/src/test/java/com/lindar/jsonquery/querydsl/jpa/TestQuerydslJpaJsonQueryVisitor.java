@@ -324,7 +324,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         StringComparisonOperation.ENDS_WITH,
                         value));
 
-        assertToString("?1 like player.promocode escape '!'",
+        assertToString("player.promocode like ?1 escape '!'",
                 createStringComparisonNodePredicate("promocode",
                         StringComparisonOperation.REGEX,
                         value));
