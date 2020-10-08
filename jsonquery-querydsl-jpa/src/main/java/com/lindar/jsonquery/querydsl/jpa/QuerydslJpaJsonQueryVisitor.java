@@ -103,7 +103,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 predicate = longPath.in(node.getValue());
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported Enum operator " + node.getOperation());
+                throw new IllegalArgumentException("Unsupported Lookup operator " + node.getOperation());
         }
 
         if(node.isNegate()){
