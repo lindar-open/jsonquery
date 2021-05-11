@@ -112,13 +112,39 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         List fetch = query2.fetch();
         System.out.println(fetch.size());
+    }
 
-        /*JPAQuery query2 = new JPAQuery(entityManager);
-        query2.select(entity).from(entity).where(entity.in(query));
-        query2.fetch();*/
+    @Test
+    @DatabaseSetup("/sampleData.xml")
+    public void testRelativeDateRange() throws Exception {
 
-        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
+        DateComparisonNode enumNode = new DateComparisonNode();
+        enumNode.setField("lastLoginDate");
+        enumNode.setOperation(DateComparisonNode.Operation.RELATIVE);
+        enumNode.setRelativeOperation(DateComparisonNode.RelativeOperation.DAY);
+        enumNode.setRelativeValue(1);
+        DateComparisonNode.RelativeDays relativeDays = new DateComparisonNode.RelativeDays();
+        relativeDays.setFriday(true);
+        relativeDays.setSaturday(true);
+        relativeDays.setSunday(true);
+        enumNode.setRelativeDays(relativeDays);
 
+        JsonQuery holder = new JsonQuery();
+        holder.getConditions().getItems().add(enumNode);
+
+        //query.fetch();
+
+        JPAQuery query2 = new JPAQuery(entityManager);
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
+
+        query2.select(entity2).from(entity2).where(booleanBuilder);
+
+        System.out.println(toString(query2));
+
+        List fetch = query2.fetch();
+        System.out.println(fetch.size());
     }
 
     @Test

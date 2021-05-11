@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ public class Player {
     private long id;
     private String username;
     private BigDecimal deposits;
+    private Instant lastLoginDate;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "player", fetch = FetchType.LAZY)
     private List<PlayerAttrition> attritions;

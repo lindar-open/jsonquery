@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class DateComparisonNode extends ComparisonNode {
 
     private RelativeOperation relativeOperation;
     private RelativePeriod relativePeriod;
+    private RelativeDays relativeDays;
     private int relativeValue;
 
     private DateOperation dateOperation;
@@ -78,7 +81,8 @@ public class DateComparisonNode extends ComparisonNode {
     public enum RelativeOperation {
         IN_THE_LAST,
         MORE_THAN,
-        IS
+        IS,
+        DAY
     }
 
     public enum RelativePeriod {
@@ -86,6 +90,29 @@ public class DateComparisonNode extends ComparisonNode {
         WEEK,
         MONTH,
         YEAR
+    }
+
+    @Data
+    public static class RelativeDays {
+        private boolean monday = false;
+        private boolean tuesday = false;
+        private boolean wednesday = false;
+        private boolean thursday = false;
+        private boolean friday = false;
+        private boolean saturday = false;
+        private boolean sunday = false;
+
+        public List<DayOfWeek> getDaysOfWeek(){
+            List<DayOfWeek> daysOfWeek = new ArrayList<>();
+            if(monday) daysOfWeek.add(DayOfWeek.MONDAY);
+            if(tuesday) daysOfWeek.add(DayOfWeek.TUESDAY);
+            if(wednesday) daysOfWeek.add(DayOfWeek.WEDNESDAY);
+            if(thursday) daysOfWeek.add(DayOfWeek.THURSDAY);
+            if(friday) daysOfWeek.add(DayOfWeek.FRIDAY);
+            if(saturday) daysOfWeek.add(DayOfWeek.SATURDAY);
+            if(sunday) daysOfWeek.add(DayOfWeek.SUNDAY);
+            return daysOfWeek;
+        }
     }
 
     @Override

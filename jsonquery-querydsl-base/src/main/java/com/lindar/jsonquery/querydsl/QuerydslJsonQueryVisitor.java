@@ -2,7 +2,6 @@ package com.lindar.jsonquery.querydsl;
 
 import com.lindar.jsonquery.ast.*;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
@@ -14,6 +13,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Created by stevenhills on 24/09/2016.
  */
 public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predicate, PathBuilder>, JsonQueryAggregateVisitor<Predicate, PathBuilder> {
-    
+
     public Predicate visit(StringComparisonNode node, PathBuilder entity) {
         if(!node.isEnabled()) return new BooleanBuilder();
 
@@ -475,6 +475,8 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 return dateExpression.lt(fromRelativeDate(dateComparisonNode));
             case IS:
                 return dateExpression.eq(fromRelativeDate(dateComparisonNode));
+            case DAY:
+                return dateExpression.in(fromRelativeDateDays(dateComparisonNode));
         }
 
         throw new IllegalArgumentException("Date operation not supported");
@@ -521,6 +523,14 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
                 return fromLocalDate(LocalDate.now().minusYears(dateComparisonNode.getRelativeValue()));
         }
         throw new IllegalArgumentException("Date operation not supported");
+    }
+
+    private List<Date> fromRelativeDateDays(DateComparisonNode dateComparisonNode){
+        if(dateComparisonNode.getRelativeDays() == null) return new ArrayList<>();
+
+        return dateComparisonNode.getRelativeDays().getDaysOfWeek().stream()
+                .map(dayOfWeek -> fromLocalDate(LocalDate.now().minusWeeks(dateComparisonNode.getRelativeValue()).with(TemporalAdjusters.nextOrSame(dayOfWeek))))
+                .collect(Collectors.toList());
     }
 
     private Date fromLocalDate(LocalDate date){
