@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,24 +94,24 @@ public class DateComparisonNode extends ComparisonNode {
     }
 
     @Data
-    public static class RelativeDays {
-        private boolean monday = false;
-        private boolean tuesday = false;
-        private boolean wednesday = false;
-        private boolean thursday = false;
-        private boolean friday = false;
-        private boolean saturday = false;
-        private boolean sunday = false;
+    public static class RelativeDays implements Serializable {
+        private Boolean monday = false;
+        private Boolean tuesday = false;
+        private Boolean wednesday = false;
+        private Boolean thursday = false;
+        private Boolean friday = false;
+        private Boolean saturday = false;
+        private Boolean sunday = false;
 
         public List<DayOfWeek> getDaysOfWeek(){
             List<DayOfWeek> daysOfWeek = new ArrayList<>();
-            if(monday) daysOfWeek.add(DayOfWeek.MONDAY);
-            if(tuesday) daysOfWeek.add(DayOfWeek.TUESDAY);
-            if(wednesday) daysOfWeek.add(DayOfWeek.WEDNESDAY);
-            if(thursday) daysOfWeek.add(DayOfWeek.THURSDAY);
-            if(friday) daysOfWeek.add(DayOfWeek.FRIDAY);
-            if(saturday) daysOfWeek.add(DayOfWeek.SATURDAY);
-            if(sunday) daysOfWeek.add(DayOfWeek.SUNDAY);
+            if(monday != null && monday) daysOfWeek.add(DayOfWeek.MONDAY);
+            if(tuesday != null && tuesday) daysOfWeek.add(DayOfWeek.TUESDAY);
+            if(wednesday != null && wednesday) daysOfWeek.add(DayOfWeek.WEDNESDAY);
+            if(thursday != null && thursday) daysOfWeek.add(DayOfWeek.THURSDAY);
+            if(friday != null && friday) daysOfWeek.add(DayOfWeek.FRIDAY);
+            if(saturday != null && saturday) daysOfWeek.add(DayOfWeek.SATURDAY);
+            if(sunday != null && sunday) daysOfWeek.add(DayOfWeek.SUNDAY);
             return daysOfWeek;
         }
     }
