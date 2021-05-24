@@ -379,7 +379,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
 
         ImmutablePair<String, PathBuilder> pathJoin = processPath(node.getField(), entity);
 
-        StringExpression stringPath = pathJoin.getValue().getEnum(pathJoin.getKey(), Enum.class).stringValue();
+        EnumPath stringPath = pathJoin.getValue().getEnum(pathJoin.getKey(), Enum.class);
 
         NumberExpression numberPath = null;
 
