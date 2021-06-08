@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,7 +14,7 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class DateComparisonNode extends ComparisonNode {
+public abstract class BaseDateComparisonNode<T extends Comparable> extends ComparisonNode {
 
     private Operation operation;
 
@@ -27,7 +26,7 @@ public class DateComparisonNode extends ComparisonNode {
     private int relativeValue;
 
     private DateOperation dateOperation;
-    private List<Date> dateValue = Lists.newArrayList();
+    private List<T> dateValue = Lists.newArrayList();
 
     public enum DateOperation implements ComparisonOperation {
         EQUALS(1),
@@ -115,15 +114,5 @@ public class DateComparisonNode extends ComparisonNode {
             if(sunday != null && sunday) daysOfWeek.add(DayOfWeek.SUNDAY);
             return daysOfWeek;
         }
-    }
-
-    @Override
-    public <R, C> R accept(JsonQueryVisitor<R, C> v, C context) {
-        return v.visit(this, context);
-    }
-
-    @Override
-    public <R, C> R accept(JsonQueryVisitor<R, C> v) {
-        return v.visit(this, null);
     }
 }

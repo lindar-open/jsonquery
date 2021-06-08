@@ -40,6 +40,16 @@ public class HashCodeVisitor implements JsonQueryVisitor<Integer, Void> {
     }
 
     @Override
+    public Integer visit(DateInstantComparisonNode node, Void context) {
+        return visit((BaseNode) node);
+    }
+
+    @Override
+    public Integer visit(DateLocalDateComparisonNode node, Void context) {
+        return visit((BaseNode) node);
+    }
+
+    @Override
     public Integer visit(BooleanComparisonNode node, Void context) {
         return visit((BaseNode) node);
     }

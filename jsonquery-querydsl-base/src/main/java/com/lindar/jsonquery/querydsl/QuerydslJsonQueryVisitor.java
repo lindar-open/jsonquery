@@ -9,8 +9,7 @@ import com.querydsl.core.types.dsl.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
@@ -24,8 +23,12 @@ import java.util.stream.Collectors;
  */
 public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predicate, PathBuilder>, JsonQueryAggregateVisitor<Predicate, PathBuilder> {
 
+    private final static QuerydslLocalDateCalculator LOCAL_DATE_CALCULATOR = new QuerydslLocalDateCalculator();
+    private final static QuerydslInstantCalculator INSTANT_CALCULATOR = new QuerydslInstantCalculator();
+
     public Predicate visit(StringComparisonNode node, PathBuilder entity) {
         if(!node.isEnabled()) return new BooleanBuilder();
+
 
         ImmutablePair<String, PathBuilder> stringPathJoin = processPath(node.getField(), entity);
 
@@ -143,6 +146,18 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         }
 
         return predicate;
+    }
+
+    @Override
+    public Predicate visit(DateInstantComparisonNode node, PathBuilder entity) {
+        DateExpression<Instant> dateExpression = entity.getDate(node.getField(), Instant.class);
+        return INSTANT_CALCULATOR.toPredicate(node, dateExpression);
+    }
+
+    @Override
+    public Predicate visit(DateLocalDateComparisonNode node, PathBuilder entity) {
+        DateExpression<LocalDate> dateExpression = entity.getDate(node.getField(), LocalDate.class);
+        return LOCAL_DATE_CALCULATOR.toPredicate(node, dateExpression);
     }
 
     @Override
@@ -429,11 +444,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         return predicate;
     }
 
-    private String toSafeReference(String reference){
-        return reference.replace("-", "_");
-    }
-
-    private Predicate fromPreset(DateComparisonNode dateComparisonNode, DateTemplate<Date> dateExpression){
+    private Predicate fromPreset(DateComparisonNode dateComparisonNode, DateExpression<Date> dateExpression){
 
         switch (dateComparisonNode.getPresetOperation()){
 
@@ -466,7 +477,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         throw new IllegalArgumentException("Date operation not supported");
     }
 
-    private Predicate fromRelative(DateComparisonNode dateComparisonNode, DateTemplate<Date> dateExpression){
+    private Predicate fromRelative(DateComparisonNode dateComparisonNode, DateExpression<Date> dateExpression){
 
         switch (dateComparisonNode.getRelativeOperation()){
             case IN_THE_LAST:
@@ -482,7 +493,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         throw new IllegalArgumentException("Date operation not supported");
     }
 
-    private Predicate fromAbsolute(DateComparisonNode dateComparisonNode, DateTemplate<Date> dateExpression){
+    private Predicate fromAbsolute(DateComparisonNode dateComparisonNode, DateExpression<Date> dateExpression){
         Date startDate = dateComparisonNode.getDateValue().get(0);
         Date endDate = new Date();
         if(dateComparisonNode.getDateValue().size() > 1){
@@ -513,6 +524,8 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         }
 
         switch(dateComparisonNode.getRelativePeriod()){
+            case HOUR:
+                return fromLocalDateTime(LocalDateTime.now().minusHours(dateComparisonNode.getRelativeValue()));
             case DAY:
                 return fromLocalDate(LocalDate.now().minusDays(dateComparisonNode.getRelativeValue()));
             case WEEK:
@@ -529,12 +542,17 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         if(dateComparisonNode.getRelativeDays() == null) return new ArrayList<>();
 
         return dateComparisonNode.getRelativeDays().getDaysOfWeek().stream()
-                .map(dayOfWeek -> fromLocalDate(LocalDate.now().minusWeeks(dateComparisonNode.getRelativeValue()).with(TemporalAdjusters.nextOrSame(dayOfWeek))))
+                .map(dayOfWeek -> fromLocalDate(LocalDate.now().minusWeeks(dateComparisonNode.getRelativeValue()).with(dayOfWeek)))
                 .collect(Collectors.toList());
     }
 
     private Date fromLocalDate(LocalDate date){
         return Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+
+    private Date fromLocalDateTime(LocalDateTime date){
+        return Date.from(date.toInstant(ZoneOffset.UTC));
     }
 
     protected abstract ImmutablePair<String, PathBuilder> processPath(String field, PathBuilder entity);
