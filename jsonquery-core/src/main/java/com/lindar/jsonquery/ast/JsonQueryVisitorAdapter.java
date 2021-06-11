@@ -18,6 +18,16 @@ public class JsonQueryVisitorAdapter<R, C> implements JsonQueryVisitor<R, C> {
     }
 
     @Override
+    public R visit(DateInstantComparisonNode dateComparisonNode, C context) {
+        return null;
+    }
+
+    @Override
+    public R visit(DateLocalDateComparisonNode node, C context) {
+        return null;
+    }
+
+    @Override
     public R visit(BooleanComparisonNode booleanComparisonNode, C context) {
         return null;
     }

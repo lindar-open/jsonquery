@@ -26,6 +26,9 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,6 +149,58 @@ public class TestQuerydslJpaJsonQueryVisitor {
         List fetch = query2.fetch();
         System.out.println(fetch.size());
     }
+
+    @Test
+    public void testDayOfWeek(){
+        LocalDate now = LocalDate.now().minusDays(2);
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY)));
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY)));
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY)));
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY)));
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY)));
+        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
+        System.out.println("---");
+        System.out.println(now.with(DayOfWeek.MONDAY));
+        System.out.println(now.with(DayOfWeek.TUESDAY));
+        System.out.println(now.with(DayOfWeek.WEDNESDAY));
+        System.out.println(now.with(DayOfWeek.THURSDAY));
+        System.out.println(now.with(DayOfWeek.FRIDAY));
+        System.out.println(now.with(DayOfWeek.SATURDAY));
+        System.out.println(now.with(DayOfWeek.SUNDAY));
+    }
+
+    @Test
+    @DatabaseSetup("/sampleData.xml")
+    public void testDateTime() throws Exception {
+
+        DateInstantComparisonNode enumNode = new DateInstantComparisonNode();
+        enumNode.setField("lastLoginDate");
+        enumNode.setOperation(BaseDateComparisonNode.Operation.RELATIVE);
+        enumNode.setRelativeOperation(BaseDateComparisonNode.RelativeOperation.IN_THE_LAST);
+        enumNode.setRelativeValue(1);
+        enumNode.setRelativePeriod(BaseDateComparisonNode.RelativePeriod.HOUR);
+        enumNode.setWithTime(true);
+
+
+        JsonQuery holder = new JsonQuery();
+        holder.getConditions().getItems().add(enumNode);
+
+        //query.fetch();
+
+        JPAQuery query2 = new JPAQuery(entityManager);
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
+
+        query2.select(entity2).from(entity2).where(booleanBuilder);
+
+        System.out.println(toString(query2));
+
+        List fetch = query2.fetch();
+        System.out.println(fetch.size());
+    }
+
 
     @Test
     @DatabaseSetup("/sampleData.xml")
