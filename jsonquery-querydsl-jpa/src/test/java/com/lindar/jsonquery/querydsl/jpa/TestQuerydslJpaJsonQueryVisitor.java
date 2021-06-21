@@ -249,7 +249,6 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithManyToMany() throws Exception {
 
         LookupComparisonNode lookupComparisonNode= new LookupComparisonNode();

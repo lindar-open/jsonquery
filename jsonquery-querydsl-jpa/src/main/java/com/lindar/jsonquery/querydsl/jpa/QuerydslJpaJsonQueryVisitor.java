@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by stevenhills on 24/09/2016.
@@ -36,7 +37,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     protected JPQLQuery query;
     protected Stack<JPQLQuery> queryStack = new Stack<>();
 
-    public QuerydslJpaJsonQueryVisitor(JPAQuery query){
+    public QuerydslJpaJsonQueryVisitor(JPAQuery query) {
         this.query = query;
     }
 
@@ -45,12 +46,12 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
         Field field = FieldUtils.getField(context.getType(), fieldParts[0], true);
 
-        if(field == null){
+        if (field == null) {
             throw new IllegalArgumentException();
         }
 
         ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
-        if(manyToMany == null){
+        if (manyToMany == null) {
             throw new IllegalArgumentException();
 
         }
@@ -58,26 +59,44 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
         String primaryKey;
         List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
-        if(fieldsListWithAnnotation.isEmpty()){
+        if (fieldsListWithAnnotation.isEmpty()) {
             primaryKey = "id";
         } else {
             primaryKey = fieldsListWithAnnotation.get(0).getName();
         }
 
         PathMetadata pathMetadata = PathMetadataFactory.forCollectionAny(context.getSet(fieldParts[0], Object.class));
-        if(node.isNegate()){
-            return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue()).not();
+        try {
+            List<Object> objects = node.getValue().stream().map(id -> {
+                try {
+                    Object object = relatedClass.newInstance();
+                    FieldUtils.writeField(FieldUtils.getField(relatedClass, primaryKey, true), object, id);
+                    return object;
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                }
+            }).collect(Collectors.toList());
+
+            if (node.isNegate()) {
+                return new PathBuilder(relatedClass, pathMetadata).in(objects).not();
+            }
+            return new PathBuilder(relatedClass, pathMetadata).in(objects);
+        } catch (Exception e) {
+            if (node.isNegate()) {
+                return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue()).not();
+            }
+            return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue());
         }
-        return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue());
+
     }
 
     @Override
     public Predicate visit(LookupComparisonNode node, PathBuilder context) {
-        if(!node.isEnabled()) return new BooleanBuilder();
+        if (!node.isEnabled()) return new BooleanBuilder();
 
         String[] fieldParts = DOT.split(node.getField());
         Field field = FieldUtils.getField(context.getType(), fieldParts[0], true);
-        if(field != null && field.isAnnotationPresent(ManyToMany.class)){
+        if (field != null && field.isAnnotationPresent(ManyToMany.class)) {
             return manyLookupVisit(node, context);
         }
 
@@ -86,12 +105,12 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         NumberExpression longPath = pathJoin.getValue().getNumber(pathJoin.getKey(), Long.class);
 
         Long singleValue = 0L;
-        if(node.getValue() != null && !node.getValue().isEmpty()){
+        if (node.getValue() != null && !node.getValue().isEmpty()) {
             singleValue = node.getValue().get(0);
         }
 
         Predicate predicate = null;
-        switch(node.getOperation()){
+        switch (node.getOperation()) {
 
             case EQUALS:
                 predicate = longPath.eq(singleValue);
@@ -106,7 +125,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 throw new IllegalArgumentException("Unsupported Lookup operator " + node.getOperation());
         }
 
-        if(node.isNegate()){
+        if (node.isNegate()) {
             return predicate.not();
         }
 
@@ -115,7 +134,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
     @Override
     public Predicate visit(RelatedRelationshipNode node, PathBuilder context) {
-        if(!node.isEnabled()) return new BooleanBuilder();
+        if (!node.isEnabled()) return new BooleanBuilder();
 
         JPQLQuery<Integer> subquery = JPAExpressions.select(Expressions.constant(1));
 
@@ -124,24 +143,24 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
 
         List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
-        if(fieldsListWithAnnotation.isEmpty()){
+        if (fieldsListWithAnnotation.isEmpty()) {
             primaryKey = "id";
         } else {
             primaryKey = fieldsListWithAnnotation.get(0).getName();
         }
 
         Field relationshipField = FieldUtils.getField(context.getType(), node.getField(), true);
-        if(relationshipField == null){
+        if (relationshipField == null) {
             throw new IllegalArgumentException();
         }
 
-        if(relationshipField.isAnnotationPresent(OneToMany.class)){
+        if (relationshipField.isAnnotationPresent(OneToMany.class)) {
             OneToMany annotation = relationshipField.getAnnotation(OneToMany.class);
             foreignKey = annotation.mappedBy();
         } else {
             String className = context.getType().getSimpleName();
             className = Character.toLowerCase(className.charAt(0)) + className.substring(1);
-            if(FieldUtils.getField(relatedClass, className) == null){
+            if (FieldUtils.getField(relatedClass, className) == null) {
                 throw new IllegalArgumentException();
             }
             foreignKey = className;
@@ -161,17 +180,16 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         Predicate havingPredicate = visit(node.getAggregations(), subqueryEntity);
 
         this.query = queryStack.pop();
-        if((conditionsPredicate == null || "".equals(conditionsPredicate.toString())) && (havingPredicate == null || "".equals(havingPredicate.toString()))){
+        if ((conditionsPredicate == null || "".equals(conditionsPredicate.toString())) && (havingPredicate == null || "".equals(havingPredicate.toString()))) {
             return new BooleanBuilder();
         }
 
 
-
         subquery.where(ExpressionUtils.allOf(conditionsPredicate, context.eq(subqueryKey)))
-            .groupBy(subqueryKey)
-            .having(havingPredicate);
+                .groupBy(subqueryKey)
+                .having(havingPredicate);
 
-        if(node.isNegate()){
+        if (node.isNegate()) {
             return subquery.notExists();
         } else {
             return subquery.exists();
@@ -184,7 +202,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         String[] fieldParts = DOT.split(field);
 
         // join needed
-        if(fieldParts.length > 1){
+        if (fieldParts.length > 1) {
             String[] parent = new String[fieldParts.length - 1];
             System.arraycopy(fieldParts, 0, parent, 0, fieldParts.length - 1);
 
@@ -196,10 +214,10 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         return ImmutablePair.of(field, entity);
     }
 
-    private PathBuilder<?> doJoin (
-        PathBuilder<?> entity,
-        String path,
-        String reference) {
+    private PathBuilder<?> doJoin(
+            PathBuilder<?> entity,
+            String path,
+            String reference) {
 
         String safeReference = toSafeReference(reference);
 
@@ -221,17 +239,17 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 String parentKey = StringUtils.join(parent, ".");
                 entity = doJoin(entity, parentKey, safeReference);
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath)entity.get(tokens[tokens.length - 1]), rv);
+                query.leftJoin((EntityPath) entity.get(tokens[tokens.length - 1]), rv);
             } else {
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath)entity.get(path), rv);
+                query.leftJoin((EntityPath) entity.get(path), rv);
             }
             joins.put(entity, mapReference, rv);
         }
         return rv;
     }
 
-    private String toSafeReference(String reference){
+    private String toSafeReference(String reference) {
         return reference.replace("-", "_");
     }
 
