@@ -1,7 +1,5 @@
 package com.lindar.jsonquery.querydsl.jpa;
 
-import com.github.springtestdbunit.DbUnitTestExecutionListener;
-import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.google.common.collect.Lists;
 import com.lindar.jsonquery.JsonQuery;
 import com.lindar.jsonquery.ast.*;
@@ -17,39 +15,18 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by stevenhills on 25/09/2016.
- */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(value = "classpath:**/context.xml")
-@TestExecutionListeners({ DependencyInjectionTestExecutionListener.class,
-        DbUnitTestExecutionListener.class })
+
 public class TestQuerydslJpaJsonQueryVisitor {
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
     private QuerydslJpaJsonQueryVisitor visitor;
     private PathBuilder<Player> playerEntity;
     private PathBuilder<PlayerAttrition> playerAttritionEntity;
-
 
     @Before
     public void setUp() {
@@ -70,10 +47,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         playerAttritionEntity = null;
     }
 
-
-
     @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithRelationships() throws Exception {
 
         EnumComparisonNode enumNode = new EnumComparisonNode();
@@ -102,23 +76,17 @@ public class TestQuerydslJpaJsonQueryVisitor {
         holder.getConditions().getItems().add(relatedRelationshipNode);
         holder.getConditions().getItems().add(relatedRelationshipNode);
 
-        //query.fetch();
-
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
 
-        System.out.println(toString(query2));
-
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
+        assertToString("(select player from Player player where player in (select player from Player player   left join player.affiliate as affiliate where str(affiliate.type) = ?1 and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player)))", query2);
     }
 
     @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testRelativeDateRange() throws Exception {
 
         DateComparisonNode enumNode = new DateComparisonNode();
@@ -137,7 +105,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         //query.fetch();
 
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
@@ -148,29 +116,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testDayOfWeek(){
-        LocalDate now = LocalDate.now().minusDays(2);
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY)));
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY)));
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY)));
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY)));
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY)));
-        System.out.println(now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
-        System.out.println("---");
-        System.out.println(now.with(DayOfWeek.MONDAY));
-        System.out.println(now.with(DayOfWeek.TUESDAY));
-        System.out.println(now.with(DayOfWeek.WEDNESDAY));
-        System.out.println(now.with(DayOfWeek.THURSDAY));
-        System.out.println(now.with(DayOfWeek.FRIDAY));
-        System.out.println(now.with(DayOfWeek.SATURDAY));
-        System.out.println(now.with(DayOfWeek.SUNDAY));
-    }
-
-    @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testDateTime() throws Exception {
-
         DateInstantComparisonNode enumNode = new DateInstantComparisonNode();
         enumNode.setField("lastLoginDate");
         enumNode.setOperation(BaseDateComparisonNode.Operation.RELATIVE);
@@ -183,24 +129,18 @@ public class TestQuerydslJpaJsonQueryVisitor {
         JsonQuery holder = new JsonQuery();
         holder.getConditions().getItems().add(enumNode);
 
-        //query.fetch();
-
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
 
-        System.out.println(toString(query2));
-
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
+        assertToString("(select player from Player player where player in (select player from Player player where player.lastLoginDate >= ?1))", query2);
     }
 
 
     @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithJoin() throws Exception {
 
         StringComparisonNode stringNode = new StringComparisonNode();
@@ -226,61 +166,37 @@ public class TestQuerydslJpaJsonQueryVisitor {
         holder.getConditions().getItems().add(stringNode);
         holder.getConditions().getItems().add(relatedRelationshipNode);
 
-        //query.fetch();
-
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
-
-        /*JPAQuery query2 = new JPAQuery(entityManager);
-        query2.select(entity).from(entity).where(entity.in(query));
-        query2.fetch();*/
-
-        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
-
     }
 
     @Test
     public void testGeneratedQueryWithManyToMany() throws Exception {
 
-        LookupComparisonNode lookupComparisonNode= new LookupComparisonNode();
+        LookupComparisonNode lookupComparisonNode = new LookupComparisonNode();
         lookupComparisonNode.setField("lists");
         lookupComparisonNode.setOperation(LookupComparisonOperation.IN);
         ArrayList<Long> values = new ArrayList<Long>();
         values.add(1L);
         lookupComparisonNode.setValue(values);
 
-
-
         JsonQuery holder = new JsonQuery();
         holder.getConditions().getItems().add(lookupComparisonNode);
 
-        //query.fetch();
-
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
-
-        /*JPAQuery query2 = new JPAQuery(entityManager);
-        query2.select(entity).from(entity).where(entity.in(query));
-        query2.fetch();*/
-
-        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
-
+        assertToString("(select player from Player player where player in (select player from Player player where exists (select 1 from player.lists as player_lists_0 where player_lists_0 = ?1)))", query2);
     }
 
     @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithJoinAndManyToOne() throws Exception {
         LookupComparisonNode stringNode = new LookupComparisonNode();
         stringNode.setField("brand.id");
@@ -305,9 +221,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         JsonQuery holder = new JsonQuery();
         holder.getConditions().getItems().add(relatedRelationshipNode);
 
-        //query.fetch();
-
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         query2.select(entity2).from(entity2);
         BooleanBuilder booleanBuilder = new BooleanBuilder();
@@ -315,17 +229,13 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.where(booleanBuilder);
 
-        //assertToString("s", query2);
-
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
+        assertToString("(select player from Player player where exists (select 1 from PlayerAttrition PlayerAttrition   left join PlayerAttrition.brand as brand where PlayerAttrition.deposits = ?1 and brand.id = ?2 and player = PlayerAttrition.player group by PlayerAttrition.player))", query2);
     }
 
     @Test
-    @DatabaseSetup("/sampleData.xml")
     public void testGeneratedQueryWithMultipleJoins() throws Exception {
 
-        LookupComparisonNode lookupComparisonNode= new LookupComparisonNode();
+        LookupComparisonNode lookupComparisonNode = new LookupComparisonNode();
         lookupComparisonNode.setField("brand.id");
         lookupComparisonNode.setOperation(LookupComparisonOperation.IN);
         ArrayList<Long> values = new ArrayList<Long>();
@@ -347,28 +257,14 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         //query.fetch();
 
-        JPAQuery query2 = new JPAQuery(entityManager);
+        JPAQuery query2 = new JPAQuery();
         PathBuilder entity2 = new PathBuilder(Player.class, "player");
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
-
         assertToString("(select player from Player player where player in (select player from Player player   left join player.brand as brand   left join player.affiliate as affiliate where brand.id = ?1 and affiliate.id = ?1))", query2);
-
-        /*JPAQuery query2 = new JPAQuery(entityManager);
-        query2.select(entity).from(entity).where(entity.in(query));
-        query2.fetch();*/
-
-        //assertToString("(select player from Player player where brand.type like ?1 escape '!' and brand.type like ?2 escape '!' and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 group by PlayerAttrition.player.id))", query);
-
     }
-
-
-
-
 
     @Test
     public void testVisitStringComparisonNode() {
@@ -474,9 +370,8 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
 
-
     @Test
-    public void testVisitLogicalNode(){
+    public void testVisitLogicalNode() {
         List<BigDecimal> value = Lists.newArrayList(BigDecimal.ZERO);
 
         BigDecimalComparisonNode node1 = new BigDecimalComparisonNode();
@@ -547,30 +442,19 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
     }
 
-
-    public static class Holder {
-        public LogicalNode conditions = new LogicalNode(LogicalNode.LogicalOperation.AND);
-        public LogicalRelationshipNode relationships = new LogicalRelationshipNode(LogicalRelationshipNode.LogicalOperation.AND);
-    }
-
-
-
-
-
-
     private Predicate createStringComparisonNodePredicate(String field,
                                                           StringComparisonOperation comparisonOperation,
                                                           List<String> value
-    ){
+    ) {
         return createStringComparisonNodePredicate(field, comparisonOperation, value, false);
 
     }
 
     private Predicate createStringComparisonNodePredicate(String field,
                                                           StringComparisonOperation comparisonOperation,
-                                                                  List<String> value,
+                                                          List<String> value,
                                                           boolean negate
-    ){
+    ) {
         StringComparisonNode node = new StringComparisonNode();
         node.setField(field);
         node.setNegate(negate);
@@ -584,7 +468,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
     private Predicate createBigDecimalComparisonNodePredicate(String field,
                                                               NumberComparisonOperation comparisonOperation,
                                                               List<BigDecimal> value
-    ){
+    ) {
         return createBigDecimalComparisonNodePredicate(field, comparisonOperation, value, false);
     }
 
@@ -592,7 +476,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
                                                               NumberComparisonOperation comparisonOperation,
                                                               List<BigDecimal> value,
                                                               boolean negate
-    ){
+    ) {
         BigDecimalComparisonNode node = new BigDecimalComparisonNode();
         node.setField(field);
         node.setNegate(negate);
@@ -602,7 +486,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         return node.accept(visitor, playerEntity);
     }
 
-    private Predicate createLogicalNodePredicate(LogicalNode.LogicalOperation operation, List<Node> nodes){
+    private Predicate createLogicalNodePredicate(LogicalNode.LogicalOperation operation, List<Node> nodes) {
         LogicalNode node = new LogicalNode(operation);
         node.setItems(nodes);
         return node.accept(visitor, playerEntity);

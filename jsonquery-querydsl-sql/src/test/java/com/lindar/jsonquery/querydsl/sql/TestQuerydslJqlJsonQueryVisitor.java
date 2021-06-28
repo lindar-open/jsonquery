@@ -1,6 +1,5 @@
 package com.lindar.jsonquery.querydsl.sql;
 
-import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lindar.jsonquery.ast.*;
@@ -23,12 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +34,7 @@ import static org.junit.Assert.assertEquals;
  * Created by stevenhills on 25/09/2016.
  */
 @RunWith(JUnit4.class)
-@ContextConfiguration(value = "classpath:**/context.xml")
-@TestExecutionListeners({DependencyInjectionTestExecutionListener.class,
-    DbUnitTestExecutionListener.class})
 public class TestQuerydslJqlJsonQueryVisitor {
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     private QuerydslSqlJsonQueryVisitor visitor;
     private PathBuilder<Player> playerEntity;
@@ -167,11 +155,13 @@ public class TestQuerydslJqlJsonQueryVisitor {
         subQuery.where(new BooleanBuilder().and(visit).and(visit2));
         sqlQuery.where(SPlayer.player.id.in(subQuery));
 
-        //sqlQuery.join(brand).on(playerEntity.get("brand_id").eq(brand.get("id")));
-
-        //sqlQuery.join(SBrand.brand).on(SPlayer.player.fK6tx3suvslb18ek5a7oioakloy.on(SBrand.brand));
-
-        System.out.println(sqlQuery.getSQL().getSQL());
+        assertToString("select player.username\n" +
+                "from player\n" +
+                "where player.id in (select player.id\n" +
+                "from player player\n" +
+                "left join brand\n" +
+                "on player.brand_id = brand.id\n" +
+                "where brand.id = ? and player.type = ?)", sqlQuery);
     }
 
     @Test
