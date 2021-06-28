@@ -144,10 +144,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
 
-        System.out.println(toString(query2));
-
-        List fetch = query2.fetch();
-        System.out.println(fetch.size());
+        assertEquals("(select player from Player player where player in (select player from Player player where date(player.lastLoginDate) in (?1)))", toString(query2));
     }
 
     @Test
