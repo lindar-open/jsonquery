@@ -129,7 +129,7 @@ public class TestQuerydslJqlJsonQueryVisitor {
     }
 
     @Test
-    public void testGeneratedQueryWithJoin() throws Exception {
+    public void testGeneratedQueryWithJoin() {
 
         LookupComparisonNode lookupNode = new LookupComparisonNode();
         lookupNode.setField("brand.id");

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateUtils {
 
-    public static <T extends Comparable> List<LocalDate> fromRelativeDateDays(BaseDateComparisonNode<T> dateComparisonNode) {
+    public static <T extends Comparable<? super T>> List<LocalDate> fromRelativeDateDays(BaseDateComparisonNode<? super T> dateComparisonNode) {
         if (dateComparisonNode.getRelativeDays() == null) return new ArrayList<>();
 
         return dateComparisonNode.getRelativeDays().getDaysOfWeek().stream()

@@ -8,12 +8,11 @@ public enum EnumComparisonOperation implements ComparisonOperation {
     EMPTY(0),
     IN(1, 99);
 
-    private int maxArgumentCount;
-    private int minArgumentCount;
+    private final int maxArgumentCount;
+    private final int minArgumentCount;
 
     EnumComparisonOperation(int argumentCount) {
-        this.maxArgumentCount = argumentCount;
-        this.minArgumentCount = argumentCount;
+        this(argumentCount, argumentCount);
     }
 
     EnumComparisonOperation(int minArgumentCount, int maxArgumentCount) {

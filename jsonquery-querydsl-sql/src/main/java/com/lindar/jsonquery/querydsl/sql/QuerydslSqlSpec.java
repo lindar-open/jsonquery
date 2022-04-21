@@ -22,7 +22,7 @@ public class QuerydslSqlSpec {
     @Data
     @Builder
     public static class Key {
-        private Class parentClass;
+        private Class<?> parentClass;
         private String path;
     }
 
@@ -38,14 +38,14 @@ public class QuerydslSqlSpec {
     public static class Join {
         private ForeignKey foreignKey;
         private RelationalPathBase joinEntity;
-        private Class joinEntityClass;
+        private Class<?> joinEntityClass;
     }
 
     @Data
     @Builder
     public static class RelationshipSpec {
         private RelationalPathBase relationshipEntity;
-        private Class relationshipEntityClass;
+        private Class<?> relationshipEntityClass;
         private String foreignKey;
         private String primaryKey;
     }

@@ -7,9 +7,6 @@ import com.querydsl.core.types.Predicate;
  */
 public class Util {
     public static boolean isPredicateEmpty(Predicate predicate){
-        if((predicate == null || "".equals(predicate.toString()))){
-            return true;
-        }
-        return false;
+        return predicate == null || "".equals(predicate.toString());
     }
 }

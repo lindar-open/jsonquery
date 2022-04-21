@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public abstract class BaseDateComparisonNode<T extends Comparable> extends ComparisonNode {
+public abstract class BaseDateComparisonNode<T extends Comparable<? super T>> extends ComparisonNode {
 
     private Operation operation;
 
@@ -37,8 +37,8 @@ public abstract class BaseDateComparisonNode<T extends Comparable> extends Compa
         BETWEEN(2),
         EMPTY(0);
 
-        private int maxArgumentCount;
-        private int minArgumentCount;
+        private final int maxArgumentCount;
+        private final int minArgumentCount;
 
         DateOperation(int argumentCount){
             this.maxArgumentCount = argumentCount;

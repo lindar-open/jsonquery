@@ -13,5 +13,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public abstract class BasicComparisonNode<E, T extends ComparisonOperation> extends ComparisonNode {
     private T operation;
-    private List<E> value = new ArrayList<E>();
+    private List<E> value = new ArrayList<>();
 }

@@ -21,57 +21,57 @@ public class HashCodeVisitor implements JsonQueryVisitor<Integer, Void> {
 
     @Override
     public Integer visit(StringComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(LogicalNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(BigDecimalComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(DateComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(DateInstantComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(DateLocalDateComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(BooleanComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(EnumComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(LookupComparisonNode node, Void context) {
-        return visit((BaseNode) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(LogicalRelationshipNode node, Void context) {
-        return visit((Node) node);
+        return visit(node);
     }
 
     @Override
     public Integer visit(RelatedRelationshipNode node, Void context) {
-        return visit((Node) node);
+        return visit(node);
     }
 
     @Override

@@ -22,7 +22,7 @@ public class QuerydslSqlJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
     protected SQLQuery query;
 
-    private QuerydslSqlSpec querydslSqlSpec;
+    private final QuerydslSqlSpec querydslSqlSpec;
 
     public QuerydslSqlJsonQueryVisitor(SQLQuery query,
                                        QuerydslSqlSpec querydslSqlSpec){

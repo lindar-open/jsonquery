@@ -13,8 +13,8 @@ public enum NumberComparisonOperation implements ComparisonOperation {
     EMPTY(0),
     IN(-1);
 
-    private int maxArgumentCount;
-    private int minArgumentCount;
+    private final int maxArgumentCount;
+    private final int minArgumentCount;
 
     NumberComparisonOperation(int argumentCount) {
         this.maxArgumentCount = argumentCount;

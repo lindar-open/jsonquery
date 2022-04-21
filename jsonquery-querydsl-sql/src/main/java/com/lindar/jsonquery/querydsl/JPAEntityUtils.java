@@ -23,10 +23,10 @@ import java.util.Map;
 @Slf4j
 public class JPAEntityUtils {
 
-    public static String getTableNameFromEntity(Class entityClass){
+    public static String getTableNameFromEntity(Class<?> entityClass){
 
         // try and find the table name from the @table annotation
-        Table tableAnnotation = (Table)entityClass.getAnnotation(Table.class);
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
 
         if(tableAnnotation != null){
             if(!StringUtils.isEmpty(tableAnnotation.name())){
@@ -38,7 +38,7 @@ public class JPAEntityUtils {
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, entityClass.getSimpleName());
     }
 
-    public static String getPrimaryKeyFromEntity(Class entityClass){
+    public static String getPrimaryKeyFromEntity(Class<?> entityClass){
 
         // try and find primary key from @id annotation
         List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(entityClass, Id.class);
@@ -50,7 +50,7 @@ public class JPAEntityUtils {
         return "id";
     }
 
-    public static String getForeignKeyFromField(Class entityClass, String fieldName){
+    public static String getForeignKeyFromField(Class<?> entityClass, String fieldName){
 
         Field field = FieldUtils.getField(entityClass, fieldName, true);
 
@@ -64,7 +64,7 @@ public class JPAEntityUtils {
             return annotation.mappedBy() + "_id";
         }
 
-        Class relatedClass = getFieldClassFromProperty(entityClass, fieldName);
+        Class<?> relatedClass = getFieldClassFromProperty(entityClass, fieldName);
 
         String className = entityClass.getSimpleName();
         className = Character.toLowerCase(className.charAt(0)) + className.substring(1);
@@ -74,9 +74,9 @@ public class JPAEntityUtils {
         return className + "_id";
     }
 
-    public static String getJoinTableNameFromField(Class entityClass, String fieldName){
+    public static String getJoinTableNameFromField(Class<?> entityClass, String fieldName){
 
-        Class clazz = getFieldClassFromProperty(entityClass, fieldName);
+        Class<?> clazz = getFieldClassFromProperty(entityClass, fieldName);
         if(clazz == null){
             throw new IllegalArgumentException("Field not found on class");
         }
@@ -85,7 +85,7 @@ public class JPAEntityUtils {
     }
 
 
-    public static Class<?> getFieldClassFromProperty(Class entityClass, String property){
+    public static Class<?> getFieldClassFromProperty(Class<?> entityClass, String property){
         while(!entityClass.equals(Object.class)) {
             try {
                 Field e = entityClass.getDeclaredField(property);

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 @RunWith(value = JUnit4.class)
 public class TestJsonQuery {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void test() throws JsonProcessingException {
@@ -28,7 +28,7 @@ public class TestJsonQuery {
         StringComparisonNode stringNode = new StringComparisonNode();
         stringNode.setField("username");
         stringNode.setOperation(StringComparisonOperation.BEGINS_WITH);
-        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<>();
         values.add("random");
         stringNode.setValue(values);
 

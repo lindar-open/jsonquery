@@ -207,9 +207,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
     public Predicate visit(LogicalNode node, PathBuilder entity) {
         if(!node.isEnabled()) return new BooleanBuilder();
 
-        List<Predicate> predicates = node.getItems().stream().map(n -> {
-            return n.accept(this, entity);
-        }).collect(Collectors.toList());
+        List<Predicate> predicates = node.getItems().stream().map(n -> n.accept(this, entity)).collect(Collectors.toList());
 
         BooleanBuilder predicate = new BooleanBuilder();
         switch(node.getOperation()){
@@ -301,9 +299,7 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
     public Predicate visit(LogicalAggregateNode node, PathBuilder entity) {
         if(!node.isEnabled()) return new BooleanBuilder();
 
-        List<Predicate> predicates = node.getItems().stream().map(n -> {
-            return n.accept(this, entity);
-        }).collect(Collectors.toList());
+        List<Predicate> predicates = node.getItems().stream().map(n -> n.accept(this, entity)).collect(Collectors.toList());
 
         switch(node.getOperation()){
 

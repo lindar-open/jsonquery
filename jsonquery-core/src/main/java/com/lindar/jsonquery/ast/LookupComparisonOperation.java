@@ -8,12 +8,11 @@ public enum LookupComparisonOperation implements ComparisonOperation {
     EMPTY(0),
     IN(1, 99);
 
-    private int maxArgumentCount;
-    private int minArgumentCount;
+    private final int maxArgumentCount;
+    private final int minArgumentCount;
 
     LookupComparisonOperation(int argumentCount) {
-        this.maxArgumentCount = argumentCount;
-        this.minArgumentCount = argumentCount;
+        this(argumentCount, argumentCount);
     }
 
     LookupComparisonOperation(int minArgumentCount, int maxArgumentCount) {

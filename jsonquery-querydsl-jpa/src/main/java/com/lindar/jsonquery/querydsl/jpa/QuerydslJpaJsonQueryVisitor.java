@@ -239,10 +239,10 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 String parentKey = StringUtils.join(parent, ".");
                 entity = doJoin(entity, parentKey, safeReference);
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath) entity.get(tokens[tokens.length - 1]), rv);
+                query.leftJoin(entity.get(tokens[tokens.length - 1]), rv);
             } else {
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath) entity.get(path), rv);
+                query.leftJoin(entity.get(path), rv);
             }
             joins.put(entity, mapReference, rv);
         }

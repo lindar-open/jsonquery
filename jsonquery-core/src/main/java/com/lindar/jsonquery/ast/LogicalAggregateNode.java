@@ -16,7 +16,7 @@ import java.util.List;
 public class LogicalAggregateNode extends BaseAggregateNode {
 
     private final LogicalAggregateOperation operation;
-    private List<AggregateNode> items = new ArrayList<AggregateNode>();
+    private List<AggregateNode> items = new ArrayList<>();
 
     public <R, C> R accept(JsonQueryAggregateVisitor<R, C> v, C context) {
         return v.visit(this, context);

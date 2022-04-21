@@ -5,7 +5,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.DateExpression;
 
-public abstract class BaseQuerydslDateCalculator<T extends Comparable, N extends BaseDateComparisonNode<T>> implements QuerydslDateCalculator<T, N> {
+public abstract class BaseQuerydslDateCalculator<T extends Comparable<? super T>, N extends BaseDateComparisonNode<T>> implements QuerydslDateCalculator<T, N> {
 
 
     @Override

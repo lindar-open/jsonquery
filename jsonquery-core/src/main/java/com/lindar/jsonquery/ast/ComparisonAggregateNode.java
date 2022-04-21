@@ -15,5 +15,5 @@ public abstract class ComparisonAggregateNode<E> extends BaseAggregateNode {
 
     private boolean negate = false;
     private String field;
-    private List<E> value = new ArrayList<E>();
+    private List<E> value = new ArrayList<>();
 }

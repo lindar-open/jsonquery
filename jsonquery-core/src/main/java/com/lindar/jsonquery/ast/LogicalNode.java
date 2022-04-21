@@ -16,7 +16,7 @@ import java.util.List;
 public class LogicalNode extends BaseNode {
 
     private final LogicalOperation operation;
-    private List<Node> items = new ArrayList<Node>();
+    private List<Node> items = new ArrayList<>();
 
     public <R, C> R accept(JsonQueryVisitor<R, C> v, C context) {
         return v.visit(this, context);

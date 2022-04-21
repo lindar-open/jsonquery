@@ -38,8 +38,8 @@ public class DateComparisonNode extends ComparisonNode {
         BETWEEN(2),
         EMPTY(0);
 
-        private int maxArgumentCount;
-        private int minArgumentCount;
+        private final int maxArgumentCount;
+        private final int minArgumentCount;
 
         DateOperation(int argumentCount){
             this.maxArgumentCount = argumentCount;

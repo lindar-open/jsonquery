@@ -16,7 +16,7 @@ import java.util.List;
 public class LogicalRelationshipNode extends BaseRelationshipNode {
 
     private final LogicalOperation operation;
-    private List<RelatedRelationshipNode> items = new ArrayList<RelatedRelationshipNode>();
+    private List<RelatedRelationshipNode> items = new ArrayList<>();
 
     public <R, C> R accept(JsonQueryVisitor<R, C> v, C context) {
         return v.visit(this, context);

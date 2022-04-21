@@ -41,8 +41,6 @@ public class QuerydslSqlJsonQuery {
         return joinEntity.get("id").in(subquery);
     }
 
-
-
     public static Predicate toPredicate(SQLQuery sqlQuery, PathBuilder entity, JsonQuery jsonQuery, QuerydslSqlSpec querydslSqlSpec){
         Assert.notNull(sqlQuery, "SQLQuery cannot be null");
         Assert.notNull(sqlQuery.getMetadata().getProjection(), "Query Projection must be set before predicate");
@@ -85,6 +83,4 @@ public class QuerydslSqlJsonQuery {
         subquery.where(predicate);
         return joinEntity.get("id").in(subquery);
     }
-
-
 }

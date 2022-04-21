@@ -48,12 +48,12 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testGeneratedQueryWithRelationships() throws Exception {
+    public void testGeneratedQueryWithRelationships() {
 
         EnumComparisonNode enumNode = new EnumComparisonNode();
         enumNode.setField("affiliate.type");
         enumNode.setOperation(EnumComparisonOperation.EQUALS);
-        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<>();
         values.add("ORGANIC");
         enumNode.setValue(values);
 
@@ -61,7 +61,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
         decimalNode.setField("deposits");
         decimalNode.setOperation(NumberComparisonOperation.GREATER_THAN);
-        ArrayList<BigDecimal> decimalValues = new ArrayList<BigDecimal>();
+        ArrayList<BigDecimal> decimalValues = new ArrayList<>();
         decimalValues.add(BigDecimal.ZERO);
         decimalNode.setValue(decimalValues);
 
@@ -87,7 +87,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testRelativeDateRange() throws Exception {
+    public void testRelativeDateRange() {
 
         DateComparisonNode enumNode = new DateComparisonNode();
         enumNode.setField("lastLoginDate");
@@ -116,7 +116,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testDateTime() throws Exception {
+    public void testDateTime() {
         DateInstantComparisonNode enumNode = new DateInstantComparisonNode();
         enumNode.setField("lastLoginDate");
         enumNode.setOperation(BaseDateComparisonNode.Operation.RELATIVE);
@@ -141,12 +141,12 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
 
     @Test
-    public void testGeneratedQueryWithJoin() throws Exception {
+    public void testGeneratedQueryWithJoin() {
 
         StringComparisonNode stringNode = new StringComparisonNode();
         stringNode.setField("brand.type");
         stringNode.setOperation(StringComparisonOperation.BEGINS_WITH);
-        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<>();
         values.add("dragonfish");
         stringNode.setValue(values);
 
@@ -154,7 +154,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
         decimalNode.setField("deposits");
         decimalNode.setOperation(NumberComparisonOperation.GREATER_THAN);
-        ArrayList<BigDecimal> decimalValues = new ArrayList<BigDecimal>();
+        ArrayList<BigDecimal> decimalValues = new ArrayList<>();
         decimalValues.add(BigDecimal.ZERO);
         decimalNode.setValue(decimalValues);
 
@@ -175,12 +175,12 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testGeneratedQueryWithManyToMany() throws Exception {
+    public void testGeneratedQueryWithManyToMany() {
 
         LookupComparisonNode lookupComparisonNode = new LookupComparisonNode();
         lookupComparisonNode.setField("lists");
         lookupComparisonNode.setOperation(LookupComparisonOperation.IN);
-        ArrayList<Long> values = new ArrayList<Long>();
+        ArrayList<Long> values = new ArrayList<>();
         values.add(1L);
         lookupComparisonNode.setValue(values);
 
@@ -197,11 +197,11 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testGeneratedQueryWithJoinAndManyToOne() throws Exception {
+    public void testGeneratedQueryWithJoinAndManyToOne() {
         LookupComparisonNode stringNode = new LookupComparisonNode();
         stringNode.setField("brand.id");
         stringNode.setOperation(LookupComparisonOperation.EQUALS);
-        ArrayList<Long> values = new ArrayList<Long>();
+        ArrayList<Long> values = new ArrayList<>();
         values.add(1L);
         stringNode.setValue(values);
 
@@ -209,7 +209,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         BigDecimalComparisonNode decimalNode = new BigDecimalComparisonNode();
         decimalNode.setField("deposits");
         decimalNode.setOperation(NumberComparisonOperation.EQUALS);
-        ArrayList<BigDecimal> values2 = new ArrayList<BigDecimal>();
+        ArrayList<BigDecimal> values2 = new ArrayList<>();
         values2.add(BigDecimal.ONE);
         decimalNode.setValue(values2);
 
@@ -233,19 +233,19 @@ public class TestQuerydslJpaJsonQueryVisitor {
     }
 
     @Test
-    public void testGeneratedQueryWithMultipleJoins() throws Exception {
+    public void testGeneratedQueryWithMultipleJoins() {
 
         LookupComparisonNode lookupComparisonNode = new LookupComparisonNode();
         lookupComparisonNode.setField("brand.id");
         lookupComparisonNode.setOperation(LookupComparisonOperation.IN);
-        ArrayList<Long> values = new ArrayList<Long>();
+        ArrayList<Long> values = new ArrayList<>();
         values.add(1L);
         lookupComparisonNode.setValue(values);
 
         LookupComparisonNode lookupAffiliate = new LookupComparisonNode();
         lookupAffiliate.setField("affiliate.id");
         lookupAffiliate.setOperation(LookupComparisonOperation.IN);
-        ArrayList<Long> valuesAffiliate = new ArrayList<Long>();
+        ArrayList<Long> valuesAffiliate = new ArrayList<>();
         valuesAffiliate.add(1L);
         lookupAffiliate.setValue(valuesAffiliate);
 
@@ -324,42 +324,42 @@ public class TestQuerydslJpaJsonQueryVisitor {
         List<BigDecimal> values = Lists.newArrayList(BigDecimal.ZERO, BigDecimal.TEN);
 
         assertToString("player.deposits = ?1",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.EQUALS,
                         value));
 
         assertToString("player.deposits > ?1",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.GREATER_THAN,
                         value));
 
         assertToString("player.deposits >= ?1",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.GREATER_THAN_OR_EQUAL,
                         value));
 
         assertToString("player.deposits < ?1",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.LESS_THAN,
                         value));
 
         assertToString("player.deposits <= ?1",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.LESS_THAN_OR_EQUAL,
                         value));
 
         assertToString("player.deposits between ?1 and ?2",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.BETWEEN,
                         values));
 
         assertToString("player.deposits in (?1)",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.IN,
                         values));
 
         assertToString("player.deposits is null",
-                createBigDecimalComparisonNodePredicate("deposits",
+                createBigDecimalComparisonNodePredicate(
                         NumberComparisonOperation.EMPTY,
                         value));
 
@@ -465,11 +465,10 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
     }
 
-    private Predicate createBigDecimalComparisonNodePredicate(String field,
-                                                              NumberComparisonOperation comparisonOperation,
+    private Predicate createBigDecimalComparisonNodePredicate(NumberComparisonOperation comparisonOperation,
                                                               List<BigDecimal> value
     ) {
-        return createBigDecimalComparisonNodePredicate(field, comparisonOperation, value, false);
+        return createBigDecimalComparisonNodePredicate("deposits", comparisonOperation, value, false);
     }
 
     private Predicate createBigDecimalComparisonNodePredicate(String field,
