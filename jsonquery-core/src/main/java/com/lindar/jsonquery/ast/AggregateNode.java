@@ -8,5 +8,4 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use=JsonTypeInfo.Id.MINIMAL_CLASS, include= JsonTypeInfo.As.PROPERTY, property=JsonQueryConstants.JSON_TYPE_PROPERTY)
 public interface AggregateNode {
     <R, C> R accept(JsonQueryAggregateVisitor<R, C> v, C context);
-    <R, C> R accept(JsonQueryAggregateVisitor<R, C> v);
 }

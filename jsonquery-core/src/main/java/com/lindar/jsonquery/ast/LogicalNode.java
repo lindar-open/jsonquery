@@ -22,10 +22,6 @@ public class LogicalNode extends BaseNode {
         return v.visit(this, context);
     }
 
-    public <R, C> R accept(JsonQueryVisitor<R, C> v) {
-        return v.visit(this, null);
-    }
-
     public enum LogicalOperation {
         AND, OR
     }

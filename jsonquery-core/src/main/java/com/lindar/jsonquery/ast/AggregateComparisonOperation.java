@@ -1,7 +1,5 @@
 package com.lindar.jsonquery.ast;
 
-import com.lindar.jsonquery.ast.ComparisonOperation;
-
 /**
  * Created by stevenhills on 26/09/2016.
  */

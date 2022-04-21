@@ -8,7 +8,6 @@ public abstract class NoArgJsonQueryVisitorAdapter<R> implements JsonQueryVisito
     public abstract R visit(LogicalNode logicalNode);
     public abstract R visit(StringComparisonNode andNode);
 
-
     public R visit(LogicalNode logicalNode, Void context) {
         return visit(logicalNode);
     }
