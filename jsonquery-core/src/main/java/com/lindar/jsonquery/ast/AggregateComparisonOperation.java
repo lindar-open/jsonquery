@@ -12,25 +12,17 @@ public enum AggregateComparisonOperation implements ComparisonOperation {
     BETWEEN(2),
     EMPTY(0);
 
-    private final int maxArgumentCount;
-    private final int minArgumentCount;
+    private final int argumentCount;
 
     AggregateComparisonOperation(int argumentCount) {
-        this.maxArgumentCount = argumentCount;
-        this.minArgumentCount = argumentCount;
-    }
-
-    AggregateComparisonOperation(int minArgumentCount, int maxArgumentCount) {
-        this.minArgumentCount = minArgumentCount;
-        this.maxArgumentCount = maxArgumentCount;
+        this.argumentCount = argumentCount;
     }
 
     public int getMinArgumentCount() {
-        return minArgumentCount;
+        return argumentCount;
     }
 
     public int getMaxArgumentCount() {
-        return maxArgumentCount;
+        return argumentCount;
     }
-
 }

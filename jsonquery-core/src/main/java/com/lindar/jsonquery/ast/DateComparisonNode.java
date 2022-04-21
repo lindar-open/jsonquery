@@ -38,27 +38,19 @@ public class DateComparisonNode extends ComparisonNode {
         BETWEEN(2),
         EMPTY(0);
 
-        private final int maxArgumentCount;
-        private final int minArgumentCount;
+        private final int argumentCount;
 
         DateOperation(int argumentCount){
-            this.maxArgumentCount = argumentCount;
-            this.minArgumentCount = argumentCount;
-        }
-
-        DateOperation(int minArgumentCount, int maxArgumentCount){
-            this.minArgumentCount = minArgumentCount;
-            this.maxArgumentCount = maxArgumentCount;
+            this.argumentCount = argumentCount;
         }
 
         public int getMinArgumentCount() {
-            return minArgumentCount;
+            return argumentCount;
         }
 
         public int getMaxArgumentCount() {
-            return maxArgumentCount;
+            return argumentCount;
         }
-
     }
 
     public enum PresetOperation {
