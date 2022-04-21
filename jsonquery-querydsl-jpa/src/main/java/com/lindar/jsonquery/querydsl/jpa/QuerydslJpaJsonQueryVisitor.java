@@ -5,7 +5,10 @@ import com.lindar.jsonquery.ast.LookupComparisonNode;
 import com.lindar.jsonquery.ast.RelatedRelationshipNode;
 import com.lindar.jsonquery.querydsl.QuerydslJsonQueryVisitor;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.PathMetadataFactory;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -109,7 +112,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             singleValue = node.getValue().get(0);
         }
 
-        Predicate predicate = null;
+        Predicate predicate;
         switch (node.getOperation()) {
 
             case EQUALS:
@@ -138,16 +141,8 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
         JPQLQuery<Integer> subquery = JPAExpressions.select(Expressions.constant(1));
 
-        String primaryKey;
         String foreignKey;
         Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
-
-        List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
-        if (fieldsListWithAnnotation.isEmpty()) {
-            primaryKey = "id";
-        } else {
-            primaryKey = fieldsListWithAnnotation.get(0).getName();
-        }
 
         Field relationshipField = FieldUtils.getField(context.getType(), node.getField(), true);
         if (relationshipField == null) {

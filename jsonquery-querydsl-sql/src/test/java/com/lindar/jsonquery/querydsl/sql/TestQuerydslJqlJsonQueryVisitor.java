@@ -404,8 +404,7 @@ public class TestQuerydslJqlJsonQueryVisitor {
 
     @Test
     public void testVisitDateComparisonNode() {
-
-
+        // FIXME empty test
     }
 
     @Test

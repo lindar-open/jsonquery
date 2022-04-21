@@ -75,7 +75,7 @@ public class QuerydslSqlJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             singleValue = node.getValue().get(0);
         }
 
-        Predicate predicate = null;
+        Predicate predicate;
         switch(node.getOperation()){
 
             case EQUALS:

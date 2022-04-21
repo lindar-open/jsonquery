@@ -15,6 +15,4 @@ public class EnumComparisonAggregateNode extends BasicComparisonAggregateNode<In
     public <R, C> R accept(JsonQueryAggregateVisitor<R, C> v, C context) {
         return v.visit(this, context);
     }
-
-
 }

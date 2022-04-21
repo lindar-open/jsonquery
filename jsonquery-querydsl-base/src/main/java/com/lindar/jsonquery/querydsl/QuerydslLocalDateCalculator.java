@@ -30,9 +30,7 @@ public class QuerydslLocalDateCalculator extends BaseQuerydslDateCalculator<Loca
     }
 
     public Predicate fromPreset(DateLocalDateComparisonNode dateComparisonNode, DateExpression<LocalDate> dateExpression) {
-
         switch (dateComparisonNode.getPresetOperation()) {
-
             case TODAY:
                 return dateExpression.eq(LocalDate.now());
             case YESTERDAY:
@@ -58,7 +56,6 @@ public class QuerydslLocalDateCalculator extends BaseQuerydslDateCalculator<Loca
             case ANNIVERSARY:
                 return dateExpression.month().eq(LocalDate.now().getMonthValue()).and(dateExpression.dayOfMonth().eq(LocalDate.now().getDayOfMonth()));
         }
-
         throw new IllegalArgumentException("Date operation not supported");
     }
 
@@ -68,7 +65,6 @@ public class QuerydslLocalDateCalculator extends BaseQuerydslDateCalculator<Loca
         if (dateComparisonNode.getDateValue().size() > 1) {
             endDate = dateComparisonNode.getDateValue().get(1);
         }
-
         switch (dateComparisonNode.getDateOperation()) {
             case EQUALS:
                 return Expressions.booleanOperation(Ops.EQ, dateExpression, Expressions.constant(startDate));
@@ -83,15 +79,13 @@ public class QuerydslLocalDateCalculator extends BaseQuerydslDateCalculator<Loca
             case BETWEEN:
                 return Expressions.booleanOperation(Ops.BETWEEN, dateExpression, Expressions.constant(startDate), Expressions.constant(endDate));
         }
-        throw new IllegalArgumentException("Date operation not supported");
+        throw new IllegalArgumentException("Date operation not supported " + dateComparisonNode.getDateOperation());
     }
 
     private LocalDate fromRelativeDate(DateLocalDateComparisonNode dateComparisonNode) {
-
         if (dateComparisonNode.getRelativePeriod() == null) {
             return LocalDate.now().minusDays(0);
         }
-
         switch (dateComparisonNode.getRelativePeriod()) {
             case DAY:
                 return LocalDate.now().minusDays(dateComparisonNode.getRelativeValue());
