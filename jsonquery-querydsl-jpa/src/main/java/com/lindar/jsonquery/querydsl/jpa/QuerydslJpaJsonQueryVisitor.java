@@ -36,6 +36,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     protected HashBasedTable<PathBuilder, String, PathBuilder> joins = HashBasedTable.create();
     protected JPQLQuery query;
     protected Stack<JPQLQuery> queryStack = new Stack<>();
+    protected Stack<HashBasedTable<PathBuilder, String, PathBuilder>> joinsStack = new Stack<>();
 
     public QuerydslJpaJsonQueryVisitor(JPAQuery query) {
         this.query = query;
@@ -138,16 +139,8 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
         JPQLQuery<Integer> subquery = JPAExpressions.select(Expressions.constant(1));
 
-        String primaryKey;
         String foreignKey;
         Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
-
-        List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
-        if (fieldsListWithAnnotation.isEmpty()) {
-            primaryKey = "id";
-        } else {
-            primaryKey = fieldsListWithAnnotation.get(0).getName();
-        }
 
         Field relationshipField = FieldUtils.getField(context.getType(), node.getField(), true);
         if (relationshipField == null) {
@@ -174,12 +167,15 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         subquery.from(subqueryEntity);
 
         queryStack.push(this.query);
+        joinsStack.push(this.joins);
         this.query = subquery;
+        this.joins = HashBasedTable.create();
 
         Predicate conditionsPredicate = visit(node.getConditions(), subqueryEntity);
         Predicate havingPredicate = visit(node.getAggregations(), subqueryEntity);
 
         this.query = queryStack.pop();
+        this.joins = joinsStack.pop();
         if ((conditionsPredicate == null || "".equals(conditionsPredicate.toString())) && (havingPredicate == null || "".equals(havingPredicate.toString()))) {
             return new BooleanBuilder();
         }

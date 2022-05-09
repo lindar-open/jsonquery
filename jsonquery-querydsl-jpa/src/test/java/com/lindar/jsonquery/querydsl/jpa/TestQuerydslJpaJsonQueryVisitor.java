@@ -232,6 +232,37 @@ public class TestQuerydslJpaJsonQueryVisitor {
         assertToString("(select player from Player player where exists (select 1 from PlayerAttrition PlayerAttrition   left join PlayerAttrition.brand as brand where PlayerAttrition.deposits = ?1 and brand.id = ?2 and player = PlayerAttrition.player group by PlayerAttrition.player))", query2);
     }
 
+
+    @Test
+    public void testGeneratedQueryWithJoinAndMultipleManyToOne() throws Exception {
+        EnumComparisonNode providerNode = new EnumComparisonNode();
+        providerNode.setField("provider.id");
+        providerNode.setOperation(EnumComparisonOperation.EQUALS);
+        providerNode.setValue(Lists.newArrayList("EYECON"));
+
+        RelatedRelationshipNode r1 = new RelatedRelationshipNode();
+        r1.setField("igFinancialDaily");
+        r1.getConditions().getItems().add(providerNode);
+
+        RelatedRelationshipNode r2 = new RelatedRelationshipNode();
+        r2.setField("igFinancialDaily");
+        r2.getConditions().getItems().add(providerNode);
+
+        JsonQuery holder = new JsonQuery();
+        holder.getConditions().getItems().add(r1);
+        holder.getConditions().getItems().add(r2);
+
+        JPAQuery query2 = new JPAQuery();
+        PathBuilder entity2 = new PathBuilder(Player.class, "player");
+        query2.select(entity2).from(entity2);
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(QuerydslJpaJsonQuery.toPredicate(query2, entity2, holder));
+
+        query2.where(booleanBuilder);
+
+        assertToString("(select player from Player player where exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player) and exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player))", query2);
+    }
+
     @Test
     public void testGeneratedQueryWithMultipleJoins() throws Exception {
 
