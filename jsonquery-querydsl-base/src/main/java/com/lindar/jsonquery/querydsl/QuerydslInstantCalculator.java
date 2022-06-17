@@ -21,7 +21,17 @@ public class QuerydslInstantCalculator extends BaseQuerydslDateCalculator<Instan
     @Override
     protected Predicate fromRelative(DateInstantComparisonNode dateComparisonNode, DateExpression<Instant> dateExpression) {
 
-        if (dateComparisonNode.getRelativePeriod() == BaseDateComparisonNode.RelativePeriod.HOUR) {
+        if (dateComparisonNode.getRelativePeriod() == BaseDateComparisonNode.RelativePeriod.MINUTE) {
+            switch (dateComparisonNode.getRelativeOperation()) {
+                case IN_THE_LAST:
+                    return dateExpression.goe(Instant.now().minus(dateComparisonNode.getRelativeValue(), ChronoUnit.MINUTES));
+                case MORE_THAN:
+                    return dateExpression.lt(Instant.now().minus(dateComparisonNode.getRelativeValue(), ChronoUnit.MINUTES));
+                case IS:
+                    ZonedDateTime instant = Instant.now().minus(dateComparisonNode.getRelativeValue(), ChronoUnit.MINUTES).atZone(ZoneOffset.UTC);
+                    return dateExpression.between(instant.withMinute(0).withSecond(0).withNano(0).toInstant(), instant.plusHours(1).withMinute(0).withSecond(0).withNano(0).toInstant());
+            }
+        } else if (dateComparisonNode.getRelativePeriod() == BaseDateComparisonNode.RelativePeriod.HOUR) {
             switch (dateComparisonNode.getRelativeOperation()) {
                 case IN_THE_LAST:
                     return dateExpression.goe(Instant.now().minus(dateComparisonNode.getRelativeValue(), ChronoUnit.HOURS));

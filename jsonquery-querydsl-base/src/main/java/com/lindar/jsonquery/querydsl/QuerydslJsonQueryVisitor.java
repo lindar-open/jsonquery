@@ -524,6 +524,8 @@ public abstract class QuerydslJsonQueryVisitor implements JsonQueryVisitor<Predi
         }
 
         switch(dateComparisonNode.getRelativePeriod()){
+            case MINUTE:
+                return fromLocalDateTime(LocalDateTime.now().minusMinutes(dateComparisonNode.getRelativeValue()));
             case HOUR:
                 return fromLocalDateTime(LocalDateTime.now().minusHours(dateComparisonNode.getRelativeValue()));
             case DAY:

@@ -86,6 +86,7 @@ public abstract class BaseDateComparisonNode<T extends Comparable> extends Compa
     }
 
     public enum RelativePeriod {
+        MINUTE,
         HOUR,
         DAY,
         WEEK,

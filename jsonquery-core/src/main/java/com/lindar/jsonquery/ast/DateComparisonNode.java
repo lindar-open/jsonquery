@@ -87,6 +87,7 @@ public class DateComparisonNode extends ComparisonNode {
     }
 
     public enum RelativePeriod {
+        MINUTE,
         HOUR,
         DAY,
         WEEK,
