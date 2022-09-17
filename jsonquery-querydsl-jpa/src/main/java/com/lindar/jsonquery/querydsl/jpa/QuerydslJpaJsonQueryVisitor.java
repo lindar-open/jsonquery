@@ -185,6 +185,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     public Predicate visit(RelatedRelationshipNode node, PathBuilder context) {
         if (!node.isEnabled()) return new BooleanBuilder();
 
+        JPQLQuery<Integer> subquery = JPAExpressions.select(Expressions.constant(1));
 
         String foreignKey;
         Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
@@ -207,17 +208,11 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         }
 
         PathBuilder subqueryEntity = new PathBuilder(relatedClass, relatedClass.getSimpleName());
-        String primaryKey;
-        List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
-        if(fieldsListWithAnnotation.isEmpty()){
-            primaryKey = "id";
-        } else {
-            primaryKey = fieldsListWithAnnotation.get(0).getName();
-        }
-        PathBuilder subqueryKey = subqueryEntity.get(foreignKey).get(primaryKey);
 
-        JPQLQuery<Object> subquery = JPAExpressions.select(subqueryKey)
-                .from(subqueryEntity);
+        PathBuilder subqueryKey = subqueryEntity.get(foreignKey);//.get(primaryKey);
+
+
+        subquery.from(subqueryEntity);
 
         queryStack.push(this.query);
         joinsStack.push(this.joins);
@@ -233,14 +228,15 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             return new BooleanBuilder();
         }
 
-        subquery.where(conditionsPredicate)
+
+        subquery.where(ExpressionUtils.allOf(conditionsPredicate, context.eq(subqueryKey)))
                 .groupBy(subqueryKey)
                 .having(havingPredicate);
 
-        if(node.isNegate()){
-            return context.in(subquery).not();
+        if (node.isNegate()) {
+            return subquery.notExists();
         } else {
-            return context.in(subquery);
+            return subquery.exists();
         }
     }
 
