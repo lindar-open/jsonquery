@@ -5,8 +5,10 @@ import com.lindar.jsonquery.ast.LookupComparisonNode;
 import com.lindar.jsonquery.ast.RelatedRelationshipNode;
 import com.lindar.jsonquery.querydsl.QuerydslJsonQueryVisitor;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.*;
-import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.PathMetadataFactory;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.PathBuilderValidator;
@@ -19,6 +21,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -88,7 +91,6 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             }
             return new PathBuilder(relatedClass, pathMetadata).get(primaryKey).in(node.getValue());
         }
-
     }
 
     @Override
@@ -99,6 +101,8 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         Field field = FieldUtils.getField(context.getType(), fieldParts[0], true);
         if (field != null && field.isAnnotationPresent(ManyToMany.class)) {
             return manyLookupVisit(node, context);
+        } else if (field != null && field.isAnnotationPresent(ManyToOne.class)) {
+            return oneLookupVisit(node, context);
         }
 
         ImmutablePair<String, PathBuilder> pathJoin = processPath(node.getField(), context);
@@ -121,6 +125,50 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 break;
             case IN:
                 predicate = longPath.in(node.getValue());
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported Lookup operator " + node.getOperation());
+        }
+
+        if (node.isNegate()) {
+            return predicate.not();
+        }
+
+        return predicate;
+    }
+
+    private Predicate oneLookupVisit(LookupComparisonNode node, PathBuilder context) {
+        String[] fieldParts = DOT.split(node.getField());
+
+        Field field = FieldUtils.getField(context.getType(), fieldParts[0], true);
+
+        if (field == null) {
+            throw new IllegalArgumentException();
+        }
+
+        ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
+        if (manyToOne == null) {
+            throw new IllegalArgumentException();
+        }
+
+        Long singleValue = 0L;
+        if (node.getValue() != null && !node.getValue().isEmpty()) {
+            singleValue = node.getValue().get(0);
+        }
+
+        PathBuilder subqueryKey = context.get(node.getField());
+
+        Predicate predicate = null;
+        switch (node.getOperation()) {
+
+            case EQUALS:
+                predicate = subqueryKey.eq(singleValue);
+                break;
+            case EMPTY:
+                predicate = subqueryKey.isNull();
+                break;
+            case IN:
+                predicate = subqueryKey.in(node.getValue());
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported Lookup operator " + node.getOperation());
@@ -214,6 +262,22 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
         return ImmutablePair.of(field, entity);
     }
 
+    protected ImmutablePair<String, PathBuilder> processPath(String field, PathBuilder entity, int limit) {
+        String[] fieldParts = DOT.split(field);
+
+        // join needed
+        if (fieldParts.length > 1) {
+            String[] parent = new String[fieldParts.length - 1];
+            System.arraycopy(fieldParts, 0, parent, 0, fieldParts.length - 1);
+
+            PathBuilder<?> parentAlias = doJoin(entity, StringUtils.join(parent, "."), "", limit);
+            return ImmutablePair.of(fieldParts[fieldParts.length - 1], parentAlias);
+        }
+
+        // not needed
+        return ImmutablePair.of(field, entity);
+    }
+
     private PathBuilder<?> doJoin(
             PathBuilder<?> entity,
             String path,
@@ -238,6 +302,45 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 System.arraycopy(tokens, 0, parent, 0, tokens.length - 1);
                 String parentKey = StringUtils.join(parent, ".");
                 entity = doJoin(entity, parentKey, safeReference);
+                rv = new PathBuilder(Object.class, safeReference);
+                query.leftJoin((EntityPath) entity.get(tokens[tokens.length - 1]), rv);
+            } else {
+                rv = new PathBuilder(Object.class, safeReference);
+                query.leftJoin((EntityPath) entity.get(path), rv);
+            }
+            joins.put(entity, mapReference, rv);
+        }
+        return rv;
+    }
+
+
+    private PathBuilder<?> doJoin(
+            PathBuilder<?> entity,
+            String path,
+            String reference, int limit) {
+
+        String safeReference = toSafeReference(reference);
+
+        if (path.contains(".")) {
+            String[] tokens = DOT.split(path);
+            safeReference = (StringUtils.join(tokens, "_") + reference);
+        } else {
+            safeReference = path + safeReference;
+        }
+
+        String mapReference = safeReference;
+        PathBuilder<?> rv = joins.get(entity, mapReference);
+
+        if (rv == null) {
+            if (path.contains(".")) {
+                String[] tokens = DOT.split(path);
+                String[] parent = new String[tokens.length - 1];
+                System.arraycopy(tokens, 0, parent, 0, tokens.length - 1);
+                String parentKey = StringUtils.join(parent, ".");
+                if(tokens.length <= limit){
+                    return new PathBuilder(Object.class, safeReference);
+                }
+                entity = doJoin(entity, parentKey, safeReference, limit);
                 rv = new PathBuilder(Object.class, safeReference);
                 query.leftJoin((EntityPath) entity.get(tokens[tokens.length - 1]), rv);
             } else {
