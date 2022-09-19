@@ -83,7 +83,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
 
-        assertToString("(select player from Player player where player in (select player from Player player   left join player.affiliate as affiliate where str(affiliate.type) = ?1 and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player)))", query2);
+        assertToString("(select player from Player player where player in (select player from Player player   left join player.affiliate as affiliate where str(affiliate.type) = ?1 and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 group by PlayerAttrition.player.id) and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 group by PlayerAttrition.player.id) and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 group by PlayerAttrition.player.id) and player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 group by PlayerAttrition.player.id)))", query2);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.where(booleanBuilder);
 
-        assertToString("(select player from Player player where exists (select 1 from PlayerAttrition PlayerAttrition   left join PlayerAttrition.brand as brand where PlayerAttrition.deposits = ?1 and brand.id = ?2 and player = PlayerAttrition.player group by PlayerAttrition.player))", query2);
+        assertToString("(select player from Player player where player in (select PlayerAttrition.player.id from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits = ?1 and PlayerAttrition.brand.id = ?2 group by PlayerAttrition.player.id))", query2);
     }
 
 
@@ -260,7 +260,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.where(booleanBuilder);
 
-        assertToString("(select player from Player player where exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player) and exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player))", query2);
+        assertToString("(select player from Player player where player in (select PlayerIGFinancialDaily.player.id from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 group by PlayerIGFinancialDaily.player.id) and player in (select PlayerIGFinancialDaily.player.id from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 group by PlayerIGFinancialDaily.player.id))", query2);
     }
 
     @Test
@@ -294,7 +294,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
-        assertToString("(select player from Player player where player in (select player from Player player   left join player.brand as brand   left join player.affiliate as affiliate where brand.id = ?1 and affiliate.id = ?1))", query2);
+        assertToString("(select player from Player player where player in (select player from Player player where player.brand.id = ?1 and player.affiliate.id = ?1))", query2);
     }
 
     @Test
