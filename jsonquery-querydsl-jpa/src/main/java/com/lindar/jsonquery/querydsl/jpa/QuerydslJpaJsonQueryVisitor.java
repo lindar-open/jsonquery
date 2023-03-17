@@ -5,10 +5,8 @@ import com.lindar.jsonquery.ast.LookupComparisonNode;
 import com.lindar.jsonquery.ast.RelatedRelationshipNode;
 import com.lindar.jsonquery.querydsl.QuerydslJsonQueryVisitor;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.PathMetadata;
-import com.querydsl.core.types.PathMetadataFactory;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.*;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.PathBuilderValidator;
@@ -185,6 +183,13 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
     public Predicate visit(RelatedRelationshipNode node, PathBuilder context) {
         if (!node.isEnabled()) return new BooleanBuilder();
 
+
+        return buildSubQueryWithExists(node, context);
+    }
+
+    public Predicate buildSubQueryWithExists(RelatedRelationshipNode node, PathBuilder context) {
+        if (!node.isEnabled()) return new BooleanBuilder();
+
         JPQLQuery<Integer> subquery = JPAExpressions.select(Expressions.constant(1));
 
         String foreignKey;
@@ -209,7 +214,7 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
 
         PathBuilder subqueryEntity = new PathBuilder(relatedClass, relatedClass.getSimpleName());
 
-        PathBuilder subqueryKey = subqueryEntity.get(foreignKey);//.get(primaryKey);
+        PathBuilder subqueryKey = subqueryEntity.get(foreignKey);
 
 
         subquery.from(subqueryEntity);
@@ -228,7 +233,6 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             return new BooleanBuilder();
         }
 
-
         subquery.where(ExpressionUtils.allOf(conditionsPredicate, context.eq(subqueryKey)))
                 .groupBy(subqueryKey)
                 .having(havingPredicate);
@@ -237,6 +241,67 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
             return subquery.notExists();
         } else {
             return subquery.exists();
+        }
+    }
+
+    public Predicate buildSubQueryWithIn(RelatedRelationshipNode node, PathBuilder context) {
+        if (!node.isEnabled()) return new BooleanBuilder();
+
+        String foreignKey;
+        Class<?> relatedClass = PathBuilderValidator.FIELDS.validate(context.getType(), node.getField(), Object.class);
+
+        Field relationshipField = FieldUtils.getField(context.getType(), node.getField(), true);
+        if (relationshipField == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (relationshipField.isAnnotationPresent(OneToMany.class)) {
+            OneToMany annotation = relationshipField.getAnnotation(OneToMany.class);
+            foreignKey = annotation.mappedBy();
+        } else {
+            String className = context.getType().getSimpleName();
+            className = Character.toLowerCase(className.charAt(0)) + className.substring(1);
+            if (FieldUtils.getField(relatedClass, className) == null) {
+                throw new IllegalArgumentException();
+            }
+            foreignKey = className;
+        }
+
+        PathBuilder<?> subqueryEntity = new PathBuilder<>(relatedClass, relatedClass.getSimpleName());
+        String primaryKey;
+        List<Field> fieldsListWithAnnotation = FieldUtils.getFieldsListWithAnnotation(context.getType(), Id.class);
+        if (fieldsListWithAnnotation.isEmpty()) {
+            primaryKey = "id";
+        } else {
+            primaryKey = fieldsListWithAnnotation.get(0).getName();
+        }
+        PathBuilder<?> subqueryKey = subqueryEntity.get(foreignKey).get(primaryKey);
+
+        JPQLQuery<?> subquery = JPAExpressions.select(subqueryKey)
+                .from(subqueryEntity);
+
+        queryStack.push(this.query);
+        joinsStack.push(this.joins);
+        this.query = subquery;
+        this.joins = HashBasedTable.create();
+
+        Predicate conditionsPredicate = visit(node.getConditions(), subqueryEntity);
+        Predicate havingPredicate = visit(node.getAggregations(), subqueryEntity);
+
+        this.query = queryStack.pop();
+        this.joins = joinsStack.pop();
+        if ((conditionsPredicate == null || "".equals(conditionsPredicate.toString())) && (havingPredicate == null || "".equals(havingPredicate.toString()))) {
+            return new BooleanBuilder();
+        }
+
+        subquery.where(conditionsPredicate)
+                .groupBy(subqueryKey)
+                .having(havingPredicate);
+
+        if (node.isNegate()) {
+            return context.in(subquery).not();
+        } else {
+            return context.in(subquery);
         }
     }
 
@@ -299,10 +364,10 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 String parentKey = StringUtils.join(parent, ".");
                 entity = doJoin(entity, parentKey, safeReference);
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath) entity.get(tokens[tokens.length - 1]), rv);
+                query.leftJoin(entity.get(tokens[tokens.length - 1]), rv);
             } else {
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath) entity.get(path), rv);
+                query.leftJoin(entity.get(path), rv);
             }
             joins.put(entity, mapReference, rv);
         }
@@ -333,15 +398,15 @@ public class QuerydslJpaJsonQueryVisitor extends QuerydslJsonQueryVisitor {
                 String[] parent = new String[tokens.length - 1];
                 System.arraycopy(tokens, 0, parent, 0, tokens.length - 1);
                 String parentKey = StringUtils.join(parent, ".");
-                if(tokens.length <= limit){
+                if (tokens.length <= limit) {
                     return new PathBuilder(Object.class, safeReference);
                 }
                 entity = doJoin(entity, parentKey, safeReference, limit);
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath) entity.get(tokens[tokens.length - 1]), rv);
+                query.leftJoin(entity.get(tokens[tokens.length - 1]), rv);
             } else {
                 rv = new PathBuilder(Object.class, safeReference);
-                query.leftJoin((EntityPath) entity.get(path), rv);
+                query.leftJoin(entity.get(path), rv);
             }
             joins.put(entity, mapReference, rv);
         }
