@@ -318,7 +318,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         StringComparisonOperation.CONTAINS,
                         value));
 
-        assertToString("player.promocode = ?1",
+        assertToString("player.promocode = ?1 or player.promocode is null",
                 createStringComparisonNodePredicate("promocode",
                         StringComparisonOperation.EMPTY,
                         value));

@@ -324,7 +324,7 @@ public class TestQuerydslJqlJsonQueryVisitor {
                 StringComparisonOperation.CONTAINS,
                 value));
 
-        assertToString("player.promocode = ",
+        assertToString("player.promocode =  || player.promocode is null",
             createStringComparisonNodePredicate("promocode",
                 StringComparisonOperation.EMPTY,
                 value));
