@@ -318,7 +318,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
                         StringComparisonOperation.CONTAINS,
                         value));
 
-        assertToString("player.promocode = ?1",
+        assertToString("player.promocode = ?1 or player.promocode is null",
                 createStringComparisonNodePredicate("promocode",
                         StringComparisonOperation.EMPTY,
                         value));
@@ -347,6 +347,31 @@ public class TestQuerydslJpaJsonQueryVisitor {
                 createStringComparisonNodePredicate("brand.type",
                         StringComparisonOperation.EQUALS,
                         value));
+    }
+
+    @Test
+    public void testStringEmptyComparisonPutsEmptyAndNullInBrackets() {
+        StringComparisonNode empty = new StringComparisonNode();
+        empty.setField("promocode");
+        empty.setOperation(StringComparisonOperation.EMPTY);
+
+        StringComparisonNode equal = new StringComparisonNode();
+        equal.setField("nationality");
+        equal.setOperation(StringComparisonOperation.EQUALS);
+        equal.setValue(Lists.newArrayList("POL"));
+
+
+        JsonQuery holder = new JsonQuery();
+        holder.getConditions().getItems().add(empty);
+        holder.getConditions().getItems().add(equal);
+
+        JPAQuery query = new JPAQuery();
+        PathBuilder entity = new PathBuilder(Player.class, "player");
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity, holder);
+
+        query.select(entity).from(entity).where(booleanBuilder);
+        assertToString("(select player from Player player where player in (select player from Player player where (player.promocode = ?1 or player.promocode is null) and player.nationality = ?2))", query);
     }
 
     @Test
