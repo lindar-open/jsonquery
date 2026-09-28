@@ -26,6 +26,7 @@
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <jackson-annotations.version>2.21</jackson-annotations.version>
         <jackson2-databind.version>2.21.2</jackson2-databind.version>
+        <jackson3-databind.version>3.1.5</jackson3-databind.version>
         <lombok.version>1.18.46</lombok.version>
         <junit.version>4.13.2</junit.version>
 
@@ -87,6 +88,11 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson2-databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson3-databind.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
