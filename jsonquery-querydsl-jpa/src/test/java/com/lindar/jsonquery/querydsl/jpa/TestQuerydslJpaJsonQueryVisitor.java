@@ -193,7 +193,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
-        assertToString("(select player from Player player where player in (select player from Player player where exists (select 1 from Player player_1087601670   inner join player_1087601670.lists as player_lists_0 where player_1087601670 = player and player_lists_0 = ?1)))", query2);
+        assertToString("(select player from Player player where player in (select player from Player player where exists (select 1 from player.lists as player_lists_0 where player_lists_0 = ?1)))", query2);
     }
 
     @Test

@@ -3,7 +3,7 @@ package com.lindar.jsonquery.querydsl.jpa.domain;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
