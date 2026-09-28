@@ -4,7 +4,6 @@ import com.google.common.base.CaseFormat;
 import com.google.common.primitives.Primitives;
 import com.querydsl.core.util.ReflectionUtils;
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
@@ -20,7 +19,6 @@ import java.util.Map;
  * Created by Steven on 05/10/2016.
  */
 @UtilityClass
-@Slf4j
 public class JPAEntityUtils {
 
     public static String getTableNameFromEntity(Class entityClass){

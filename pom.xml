@@ -20,7 +20,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <querydsl.version>4.1.4</querydsl.version>
+        <querydsl.version>5.1.0</querydsl.version>
+        <jakarta-persistence.version>3.1.0</jakarta-persistence.version>
         <guava.version>33.7.1-jre</guava.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <jackson-annotations.version>2.21</jackson-annotations.version>
@@ -47,13 +48,24 @@
             </dependency>
             <dependency>
                 <groupId>com.querydsl</groupId>
+                <artifactId>querydsl-core</artifactId>
+                <version>${querydsl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-jpa</artifactId>
                 <version>${querydsl.version}</version>
+                <classifier>jakarta</classifier>
             </dependency>
             <dependency>
                 <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-sql</artifactId>
                 <version>${querydsl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${jakarta-persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
