@@ -2,7 +2,7 @@ package com.lindar.jsonquery.querydsl.jpa.domain;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 

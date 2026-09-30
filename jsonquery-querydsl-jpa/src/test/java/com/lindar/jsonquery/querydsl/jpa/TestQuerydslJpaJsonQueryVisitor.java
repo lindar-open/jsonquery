@@ -83,7 +83,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
 
-        assertToString("(select player from Player player where player in (select player from Player player   left join player.affiliate as affiliate where str(affiliate.type) = ?1 and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player)))", query2);
+        assertToString("(select player from Player player where player in (select player from Player player   left join player.affiliate as affiliate where str(affiliate.type) = ?1 and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?2 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?3 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?4 and player = PlayerAttrition.player group by PlayerAttrition.player) and exists (select 1 from PlayerAttrition PlayerAttrition where PlayerAttrition.deposits > ?5 and player = PlayerAttrition.player group by PlayerAttrition.player)))", query2);
     }
 
     @Test
@@ -260,7 +260,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
 
         query2.where(booleanBuilder);
 
-        assertToString("(select player from Player player where exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player) and exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player))", query2);
+        assertToString("(select player from Player player where exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?1 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player) and exists (select 1 from PlayerIGFinancialDaily PlayerIGFinancialDaily   left join PlayerIGFinancialDaily.provider as provider where str(provider.id) = ?2 and player = PlayerIGFinancialDaily.player group by PlayerIGFinancialDaily.player))", query2);
     }
 
     @Test
@@ -294,7 +294,7 @@ public class TestQuerydslJpaJsonQueryVisitor {
         QuerydslJpaJsonQuery.applyPredicateAsSubquery(booleanBuilder, entity2, holder);
 
         query2.select(entity2).from(entity2).where(booleanBuilder);
-        assertToString("(select player from Player player where player in (select player from Player player where player.brand.id = ?1 and player.affiliate.id = ?1))", query2);
+        assertToString("(select player from Player player where player in (select player from Player player where player.brand.id = ?1 and player.affiliate.id = ?2))", query2);
     }
 
     @Test
@@ -467,27 +467,27 @@ public class TestQuerydslJpaJsonQueryVisitor {
         LogicalNode logicalNodeOr = new LogicalNode(LogicalNode.LogicalOperation.OR);
         logicalNodeOr.setItems(Lists.newArrayList(node3, node4));
 
-        assertToString("player.deposits < ?1 and player.deposits > ?1",
+        assertToString("player.deposits < ?1 and player.deposits > ?2",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.AND, Lists.newArrayList(node1, node2))
         );
 
-        assertToString("player.deposits < ?1 or player.deposits > ?1",
+        assertToString("player.deposits < ?1 or player.deposits > ?2",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.OR, Lists.newArrayList(node1, node2))
         );
 
-        assertToString("player.deposits < ?1 and (player.deposits <= ?1 and player.deposits >= ?1)",
+        assertToString("player.deposits < ?1 and (player.deposits <= ?2 and player.deposits >= ?3)",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.AND, Lists.newArrayList(node1, logicalNodeAnd))
         );
 
-        assertToString("player.deposits < ?1 and (player.deposits <= ?1 or player.deposits >= ?1)",
+        assertToString("player.deposits < ?1 and (player.deposits <= ?2 or player.deposits >= ?3)",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.AND, Lists.newArrayList(node1, logicalNodeOr))
         );
 
-        assertToString("player.deposits < ?1 or player.deposits <= ?1 and player.deposits >= ?1",
+        assertToString("player.deposits < ?1 or player.deposits <= ?2 and player.deposits >= ?3",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.OR, Lists.newArrayList(node1, logicalNodeAnd))
         );
 
-        assertToString("player.deposits < ?1 or (player.deposits <= ?1 or player.deposits >= ?1)",
+        assertToString("player.deposits < ?1 or (player.deposits <= ?2 or player.deposits >= ?3)",
                 createLogicalNodePredicate(LogicalNode.LogicalOperation.OR, Lists.newArrayList(node1, logicalNodeOr))
         );
 

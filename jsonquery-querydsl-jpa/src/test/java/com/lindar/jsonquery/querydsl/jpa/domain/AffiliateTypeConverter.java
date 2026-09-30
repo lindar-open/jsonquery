@@ -1,6 +1,6 @@
 package com.lindar.jsonquery.querydsl.jpa.domain;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 
 /**
  * Created by Steven on 17/02/2017.
